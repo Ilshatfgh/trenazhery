@@ -11,17 +11,23 @@
 :root{
   --bg:#F5F6F8; --surface:#FFFFFF; --fg:#16171B; --muted:#5D616E; --line:#E0E2E8;
   --accent:#8E1B3A; --accent-soft:#F6E3E8; --ok:#1E7A4C; --ok-soft:#E0F2E8; --bad:#C94A12; --bad-soft:#FBE9DF;
+  --dd:rgba(142,27,58,.15); --dd2:rgba(20,120,130,.17); --dd3:rgba(240,170,20,.32); --blob1:rgba(142,27,58,.09); --blob2:rgba(240,170,20,.10);
   --f-term:"Cormorant Garamond",Georgia,"Times New Roman",serif;
   --f-ui:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#121317; --surface:#1B1D23; --fg:#ECEDF0; --muted:#9BA0AD; --line:#2C2F38;
-  --accent:#E3678A; --accent-soft:#3A1B26; --ok:#4CC38A; --ok-soft:#15301F; --bad:#FF8A55; --bad-soft:#3A2116; color-scheme:dark}}
+  --accent:#E3678A; --accent-soft:#3A1B26; --ok:#4CC38A; --ok-soft:#15301F; --bad:#FF8A55; --bad-soft:#3A2116; --dd:rgba(227,103,138,.22); --dd2:rgba(90,200,210,.18); --dd3:rgba(255,200,80,.26); --blob1:rgba(227,103,138,.10); --blob2:rgba(255,200,80,.06); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#121317; --surface:#1B1D23; --fg:#ECEDF0; --muted:#9BA0AD; --line:#2C2F38;
-  --accent:#E3678A; --accent-soft:#3A1B26; --ok:#4CC38A; --ok-soft:#15301F; --bad:#FF8A55; --bad-soft:#3A2116; color-scheme:dark}
+  --accent:#E3678A; --accent-soft:#3A1B26; --ok:#4CC38A; --ok-soft:#15301F; --bad:#FF8A55; --bad-soft:#3A2116; --dd:rgba(227,103,138,.22); --dd2:rgba(90,200,210,.18); --dd3:rgba(255,200,80,.26); --blob1:rgba(227,103,138,.10); --blob2:rgba(255,200,80,.06); color-scheme:dark}
 
 body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);font-size:16px;line-height:1.5}
+
+/* Детский музыкальный фон: нотные станы, скрипичные ключи, ноты, диезы, звёзды — тихо, под карточками */
+body{background-image:radial-gradient(circle at 10% 6%,var(--blob1),transparent 46%),radial-gradient(circle at 92% 34%,var(--blob2),transparent 44%);background-attachment:fixed}
+.notes{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;overflow:hidden}
+.wrap{position:relative;z-index:1}
 /* Сброс для открытия файла напрямую в браузере телефона */
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -55,7 +61,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 
 /* Шапка с нотным станом */
 .staff{padding-block:12px;background:repeating-linear-gradient(to bottom,transparent 0 9px,var(--line) 9px 10px) center/100% 50px no-repeat}
-.brand{font-family:var(--f-term);font-style:italic;font-weight:700;font-size:clamp(30px,8vw,44px);line-height:1;color:var(--accent);background:var(--bg);padding-right:10px}
+.brand{font-family:var(--f-term);font-style:italic;font-weight:700;font-size:clamp(30px,8vw,44px);line-height:1;color:var(--accent);background:transparent;padding-right:10px;text-shadow:0 0 5px var(--bg),0 0 5px var(--bg),0 0 9px var(--bg),0 0 12px var(--bg)}
 
 .card{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px}
 label.field{display:flex;flex-direction:column;gap:6px;font-weight:700}
@@ -147,6 +153,41 @@ td .term{font-size:19px;color:var(--accent)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
+<!-- декоративный фон (скринридеры пропускают) -->
+<svg class="notes" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+<defs><pattern id="mus" width="300" height="250" patternUnits="userSpaceOnUse">
+ <!-- нотный стан -->
+ <g stroke="var(--dd)" stroke-width="1.4" opacity=".7"><path d="M0 50h300M0 58h300M0 66h300M0 74h300M0 82h300"/></g>
+ <g fill="none" stroke="var(--dd)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+  <!-- скрипичный ключ -->
+  <path transform="translate(14 22) scale(.78)" d="M24 8C38 22 32 42 14 54C0 64 8 84 24 76C36 68 30 50 18 49C8 49 6 60 16 62M24 8V96C24 106 12 106 12 98"/>
+ </g>
+ <!-- ноты на стане -->
+ <g fill="var(--dd)" stroke="var(--dd)" stroke-width="2.2" stroke-linecap="round">
+  <ellipse cx="110" cy="70" rx="6.5" ry="5" transform="rotate(-20 110 70)" stroke="none"/><path d="M116 68V38" fill="none"/>
+  <ellipse cx="170" cy="62" rx="6.5" ry="5" transform="rotate(-20 170 62)" stroke="none"/><path d="M176 60V30" fill="none"/>
+  <ellipse cx="206" cy="54" rx="6.5" ry="5" transform="rotate(-20 206 54)" stroke="none"/><path d="M212 52V22" fill="none"/>
+  <path d="M176 30L212 22" stroke-width="5"/>
+  <ellipse cx="256" cy="78" rx="6.5" ry="5" transform="rotate(-20 256 78)" stroke="none"/><path d="M262 76V46" fill="none"/>
+ </g>
+ <!-- нижний ряд: диез, бемоль, пауза, ноты-«восьмые», сердечко -->
+ <g fill="none" stroke="var(--dd2)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M30 150v40M42 146v40M24 160l24-6M24 176l24-6"/>
+  <path d="M96 140v38M96 164c10-10 22 0 12 10l-12 8"/>
+  <path d="M160 140l12 10-10 12 12 12-6 8" />
+  <g fill="var(--dd2)" stroke="var(--dd2)"><ellipse cx="226" cy="186" rx="6.5" ry="5" transform="rotate(-20 226 186)" stroke="none"/><path d="M232 184V150c8 4 12 10 12 20" fill="none"/></g>
+ </g>
+ <g fill="none" stroke="var(--dd)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M140 214c-8-10-22 0-12 12l12 12 12-12c10-12-4-22-12-12z"/>
+ </g>
+ <g fill="var(--dd3)">
+  <path d="M70 116l4 9 10 1-8 7 2 10-8-5-8 5 2-10-8-7 10-1z"/>
+  <path d="M270 126l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/>
+  <path d="M200 232l2.5 5 6 1-4.5 4 1 6-5-3-5 3 1-6-4.5-4 6-1z"/>
+ </g>
+</pattern></defs>
+<rect width="100%" height="100%" fill="url(#mus)"/>
+</svg>
 <div class="wrap" id="app"></div>
 <div class="toast" id="toast" hidden></div>
 
@@ -616,5 +657,4 @@ function copyResult(r){
 
 renderHome();
 </script>
-
 </html>
