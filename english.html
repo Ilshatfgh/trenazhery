@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Пятёрка English</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Концепция: школьная тетрадь в клетку — синие чернила ученика, красная ручка учителя, оценка от 2 до 5 */
+:root{
+  --paper:#F7F9FD; --card:#FFFFFF; --fg:#172033; --muted:#5A6580; --line:#D8E1F1;
+  --ink:#2340A0; --ink-soft:#E3EAFB; --red:#D3242C; --red-soft:#FCE6E7;
+  --ok:#1E8A4C; --ok-soft:#E1F4E8; --grid:rgba(35,64,160,.07);
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-hand:"Caveat","Comic Sans MS",cursive;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1422; --card:#161F33; --fg:#E7ECF6; --muted:#97A3BC; --line:#26314B;
+  --ink:#8AA8FF; --ink-soft:#1E2A4A; --red:#FF6A6F; --red-soft:#3A1C22;
+  --ok:#4FD08A; --ok-soft:#163626; --grid:rgba(138,168,255,.06); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E1422; --card:#161F33; --fg:#E7ECF6; --muted:#97A3BC; --line:#26314B;
+  --ink:#8AA8FF; --ink-soft:#1E2A4A; --red:#FF6A6F; --red-soft:#3A1C22;
+  --ok:#4FD08A; --ok-soft:#163626; --grid:rgba(138,168,255,.06); color-scheme:dark}
+
+/* Сброс — файл должен открываться и напрямую в браузере телефона */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+[hidden]{display:none!important}
+body{margin:0;background-color:var(--paper);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px}
+.wrap{max-width:760px;margin:0 auto;padding-block:16px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.muted{color:var(--muted)}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.num{font-variant-numeric:tabular-nums}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+
+/* Шапка */
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{font-size:clamp(20px,5.5vw,26px);color:var(--ink)}
+.brand .five{font-family:var(--f-hand);font-size:46px;line-height:.6;color:var(--red);transform:rotate(-8deg);display:inline-block}
+
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:16px}
+label.field{display:flex;flex-direction:column;gap:6px;font-weight:700}
+input[type=text]{font:inherit;font-size:18px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--fg);width:100%}
+input.wrong{border-color:var(--red);background:var(--red-soft)}
+
+/* Классы */
+.grades{display:flex;gap:6px;flex-wrap:wrap}
+.grade{min-width:44px;height:44px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);font-weight:700;font-variant-numeric:tabular-nums}
+.grade[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--card)}
+
+/* Тренажёры и их варианты */
+.trainers{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.trainer{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:14px;background:var(--card);border:1.5px solid var(--line)}
+.trainer h3{font-size:15px}
+.trainer p{margin:0;font-size:14px;color:var(--muted)}
+.vars{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+.var{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);min-height:52px}
+.var:hover{border-color:var(--ink)}
+.var .vbody{flex:1;min-width:0;display:flex;flex-direction:column;font-size:14px;line-height:1.3}
+.var .vbody b{font-size:15px}
+.vbest{font-family:var(--f-hand);font-size:30px;line-height:1;color:var(--red);min-width:22px;text-align:center}
+.vbest.none{font-family:var(--f-body);font-size:14px;color:var(--muted)}
+.pbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.linkbtn{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;font-size:14px;width:max-content}
+
+/* Вопрос */
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.back{background:none;border:1.5px solid var(--line);border-radius:99px;color:var(--muted);padding:6px 14px;font-weight:600;font-size:14px}
+.back:hover{border-color:var(--red);color:var(--red)}
+.ask{font-size:14px;color:var(--muted);font-weight:600}
+.prompt{display:block;font-family:var(--f-display);font-size:clamp(20px,5vw,28px);line-height:1.3;overflow-wrap:anywhere}
+.prompt.big{font-size:clamp(30px,8vw,46px);color:var(--ink)}
+.prompt .base{display:block;color:var(--red);font-family:var(--f-body);font-weight:700;font-size:15px;letter-spacing:.08em;margin-bottom:4px}
+.prompt .sub{display:block;font-family:var(--f-body);font-size:16px;font-weight:500;color:var(--muted);margin-top:4px}
+.gap{display:inline-block;min-width:70px;border-bottom:2px solid var(--ink)}
+.opts{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:600px){.opts{grid-template-columns:1fr 1fr}}
+.opt{padding:14px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);text-align:left;font-weight:600;font-size:17px;min-height:58px}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--red);background:var(--red-soft);color:var(--red);text-decoration:line-through;cursor:default}
+.hint{min-height:24px;font-weight:700;color:var(--red);display:flex;flex-direction:column;gap:6px}
+.hint .oktxt{font-family:var(--f-hand);font-size:26px;line-height:1}
+.speak{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font-size:13px;font-weight:600;width:max-content;color:var(--fg)}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:14px 22px;border-radius:12px;border:none;background:var(--ink);color:var(--card);font-weight:700;font-size:16px}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--fg)}
+.btn.danger{background:var(--red);color:#fff}
+.confirm{border:1.5px solid var(--red);background:var(--red-soft);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+
+/* Окно подтверждения выхода — поверх экрана */
+.modal{position:fixed;inset:0;z-index:10;background:rgba(10,14,25,.55);display:grid;place-items:center;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal .box{background:var(--card);border-radius:18px;padding:22px;max-width:380px;width:100%;display:flex;flex-direction:column;gap:12px}
+.modal h3{font-size:18px}
+
+/* Итог — экран для преподавателя, оценка красной ручкой */
+.report-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.report-head .meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.report-head h2{font-size:20px}
+.mark{font-family:var(--f-hand);font-size:120px;line-height:.8;color:var(--red);border:3px solid var(--red);border-radius:50%;
+  width:130px;height:130px;display:grid;place-items:center;transform:rotate(-6deg);flex:none}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.fact{background:var(--paper);border-radius:12px;padding:10px 12px}
+.fact b{display:block;font-size:20px;font-weight:800}
+.fact span{font-size:12px;color:var(--muted)}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.wrongtxt{color:var(--red);text-decoration:line-through}
+.oktxt{color:var(--ok);font-weight:700}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--paper);padding:10px 18px;border-radius:99px;font-weight:600;font-size:14px;z-index:20}
+
+/* Телефон: крупнее, кнопки во всю ширину, таблица ошибок карточками */
+@media (max-width:560px){
+  body{font-size:17px}
+  .wrap{padding-block:10px 32px;gap:14px}
+  .card{padding:18px 16px}
+  .actions .btn{flex:1 1 100%;padding:16px;font-size:17px}
+  .trainers{grid-template-columns:1fr}
+  .mark{width:96px;height:96px;font-size:86px}
+  table.mist thead{display:none}
+  table.mist tr{display:flex;flex-direction:column;gap:2px;padding:10px 0;border-bottom:1px solid var(--line)}
+  table.mist td{border:none;padding:0}
+  table.mist td[data-l]::before{content:attr(data-l);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-top:6px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =========================================================
+   1. КОНТЕНТ: банки заданий по ступеням
+   A = 1–4 кл, B = 5–7 кл, C = 8–9 кл (ОГЭ), D = 10–11 кл (ЕГЭ)
+   ========================================================= */
+const BANDS = {
+  A:{name:"1–4 класс", note:"Первые слова, to be, have got, can"},
+  B:{name:"5–7 класс", note:"Present/Past Simple, Continuous, степени сравнения"},
+  C:{name:"8–9 класс", note:"Perfect, пассив, условные, формат ОГЭ"},
+  D:{name:"10–11 класс", note:"Сложная грамматика и словообразование, формат ЕГЭ"}
+};
+const gradeToBand = g => g<=4?"A":g<=7?"B":g<=9?"C":"D";
+
+// Слова: [английский, русский]
+const WORDS = {
+  A:[["cat","кошка"],["dog","собака"],["apple","яблоко"],["house","дом"],["sun","солнце"],["book","книга"],["pen","ручка"],["school","школа"],
+     ["ball","мяч"],["fish","рыба"],["bird","птица"],["tree","дерево"],["milk","молоко"],["bread","хлеб"],["red","красный"],["green","зелёный"],
+     ["mother","мама"],["father","папа"],["window","окно"],["flower","цветок"]],
+  B:[["weather","погода"],["holiday","каникулы"],["journey","путешествие"],["library","библиотека"],["neighbour","сосед"],["kitchen","кухня"],
+     ["homework","домашнее задание"],["timetable","расписание"],["breakfast","завтрак"],["island","остров"],["healthy","здоровый"],
+     ["dangerous","опасный"],["famous","знаменитый"],["cheap","дешёвый"],["expensive","дорогой"],["borrow","брать взаймы"],["climb","карабкаться"],["forget","забывать"]],
+  C:[["environment","окружающая среда"],["pollution","загрязнение"],["achievement","достижение"],["experience","опыт"],["advantage","преимущество"],
+     ["opportunity","возможность"],["behaviour","поведение"],["decision","решение"],["reliable","надёжный"],["available","доступный"],
+     ["avoid","избегать"],["improve","улучшать"],["require","требовать"],["succeed","преуспевать"],["purpose","цель"]],
+  D:[["consequence","последствие"],["assumption","предположение"],["contribute","вносить вклад"],["significant","значительный"],
+     ["sustainable","устойчивый"],["inevitable","неизбежный"],["reluctant","неохотный"],["enhance","усиливать"],["emphasise","подчёркивать"],
+     ["ambiguous","двусмысленный"],["acknowledge","признавать"],["deteriorate","ухудшаться"],["thorough","тщательный"],["feasible","осуществимый"],
+     ["evidence","доказательство"],["ensure","обеспечивать"]]
+};
+
+// Грамматика: q — предложение с ___, a — верный ответ, o — ровно 4 варианта, h — правило
+const GRAMMAR = {
+  A:[{q:"I ___ a pupil.",a:"am",o:["am","is","are","be"],h:"I → am"},
+     {q:"They ___ my friends.",a:"are",o:["am","is","are","be"],h:"they → are"},
+     {q:"She ___ a cat.",a:"has got",o:["has got","have got","is","are"],h:"he/she/it → has got"},
+     {q:"This is ___ apple.",a:"an",o:["a","an","many","two"],h:"an — перед гласным звуком"},
+     {q:"There ___ two books on the desk.",a:"are",o:["is","are","am","be"],h:"много предметов → there are"},
+     {q:"He ___ got a dog.",a:"has",o:["have","has","is","are"],h:"he → has"},
+     {q:"We ___ English on Monday.",a:"have",o:["has","have","is","are"],h:"we → have"},
+     {q:"My sister ___ ten.",a:"is",o:["am","is","are","has"],h:"возраст: she is ten"},
+     {q:"I ___ swim, but I can't dance.",a:"can",o:["can","cans","am","to can"],h:"can не меняется"},
+     {q:"Look! The birds ___ .",a:"are flying",o:["fly","are flying","flies","is flying"],h:"Look! → действие сейчас"}],
+  B:[{q:"He usually ___ to school by bus.",a:"goes",o:["go","goes","is going","went"],h:"usually → Present Simple, he + -s"},
+     {q:"Listen! Somebody ___ .",a:"is singing",o:["sings","is singing","sing","sang"],h:"Listen! → Present Continuous"},
+     {q:"We ___ to the zoo last Sunday.",a:"went",o:["go","went","have gone","goes"],h:"last Sunday → Past Simple"},
+     {q:"___ your brother like football?",a:"Does",o:["Do","Does","Is","Are"],h:"he/she/it → Does"},
+     {q:"She ___ TV at the moment.",a:"is watching",o:["watches","is watching","watched","watch"],h:"at the moment → Continuous"},
+     {q:"I didn't ___ him yesterday.",a:"see",o:["see","saw","seen","sees"],h:"после didn't — начальная форма"},
+     {q:"This book is ___ than that one.",a:"more interesting",o:["interesting","more interesting","most interesting","interestinger"],h:"длинное прилагательное → more"},
+     {q:"Tom is the ___ boy in our class.",a:"tallest",o:["tall","taller","tallest","most tall"],h:"the + -est"},
+     {q:"There isn't ___ milk in the fridge.",a:"any",o:["some","any","many","a"],h:"отрицание → any"},
+     {q:"How ___ apples do you need?",a:"many",o:["much","many","lot","more"],h:"исчисляемые → many"}],
+  C:[{q:"I ___ to London twice.",a:"have been",o:["have been","was","am","had been"],h:"опыт к настоящему → Present Perfect"},
+     {q:"The bridge ___ in 1890.",a:"was built",o:["built","was built","is built","has built"],h:"пассив в прошлом: was + V3"},
+     {q:"If it rains, we ___ at home.",a:"will stay",o:["stay","will stay","would stay","stayed"],h:"First Conditional"},
+     {q:"She ___ here since 2020.",a:"has lived",o:["lives","lived","has lived","is living"],h:"since → Present Perfect"},
+     {q:"When I came, they ___ dinner.",a:"were having",o:["had","were having","have","are having"],h:"процесс в момент в прошлом"},
+     {q:"English ___ all over the world.",a:"is spoken",o:["speaks","is spoken","spoke","is speaking"],h:"пассив: is + V3"},
+     {q:"He asked me where I ___ .",a:"lived",o:["live","lived","do live","living"],h:"косвенная речь: сдвиг времён"},
+     {q:"I'm looking forward to ___ you.",a:"seeing",o:["see","seeing","saw","to see"],h:"look forward to + -ing"},
+     {q:"By the time we arrived, the film ___ .",a:"had started",o:["started","has started","had started","starts"],h:"раньше другого прошлого → Past Perfect"},
+     {q:"You ___ wear a uniform. It's a school rule.",a:"must",o:["must","can","may","might"],h:"правило → must"}],
+  D:[{q:"If I ___ you, I would apologise.",a:"were",o:["am","were","would be","had been"],h:"Second Conditional: If I were"},
+     {q:"If she had studied harder, she ___ the exam.",a:"would have passed",o:["would pass","will pass","would have passed","had passed"],h:"Third Conditional"},
+     {q:"He said that he ___ the report the day before.",a:"had finished",o:["finished","has finished","had finished","finishes"],h:"косвенная речь → Past Perfect"},
+     {q:"I wish I ___ more free time.",a:"had",o:["have","had","would have","will have"],h:"wish о настоящем → Past Simple"},
+     {q:"Hardly ___ home when the phone rang.",a:"had I got",o:["I had got","had I got","I got","did I get"],h:"инверсия после Hardly"},
+     {q:"The project is said ___ next year.",a:"to be completed",o:["completing","to complete","to be completed","be completed"],h:"сложное подлежащее, пассив"},
+     {q:"It's high time we ___ .",a:"left",o:["leave","left","have left","will leave"],h:"It's high time + Past Simple"},
+     {q:"She is used to ___ up early.",a:"getting",o:["get","getting","got","to get"],h:"be used to + -ing"},
+     {q:"Not only ___ late, but he also forgot the tickets.",a:"was he",o:["he was","was he","he is","did he"],h:"инверсия после Not only"},
+     {q:"You'd better ___ a doctor.",a:"see",o:["see","to see","seeing","saw"],h:"had better + инфинитив без to"}]
+};
+
+// Порядок слов: правильные предложения; неверные варианты строятся перестановкой соседних слов
+const ORDER = {
+  A:["I have got a cat","She can swim very well","This is my school bag","We like green apples","My brother is ten","The dog is under the table"],
+  B:["We went to the park yesterday","She is reading a book now","Do you play football on Sundays","My mother usually cooks dinner","They are going to visit London","He is taller than his sister"],
+  C:["I have never been to Paris","The letter was sent last week","If it rains we will stay at home","She has lived here since 2015","He asked me where I lived","The museum was opened in 1990"],
+  D:["If I were you I would accept the offer","The results are expected to be published soon","Had I known I would have helped","She denied having taken the money","No sooner had we arrived than it started to rain"]
+};
+
+// Неправильные глаголы: [V1, V2, V3, перевод]
+const IRREGULAR = [["be","was/were","been","быть"],["go","went","gone","идти"],["see","saw","seen","видеть"],["take","took","taken","брать"],
+  ["write","wrote","written","писать"],["buy","bought","bought","покупать"],["bring","brought","brought","приносить"],["think","thought","thought","думать"],
+  ["begin","began","begun","начинать"],["drink","drank","drunk","пить"],["swim","swam","swum","плавать"],["speak","spoke","spoken","говорить"],
+  ["give","gave","given","давать"],["know","knew","known","знать"],["fly","flew","flown","летать"],["eat","ate","eaten","есть"],
+  ["choose","chose","chosen","выбирать"],["forget","forgot","forgotten","забывать"],["teach","taught","taught","учить"],["catch","caught","caught","ловить"],
+  ["break","broke","broken","ломать"],["wear","wore","worn","носить"],["sing","sang","sung","петь"],["find","found","found","находить"],["leave","left","left","уходить"]];
+
+// Словообразование (формат ОГЭ/ЕГЭ): s — предложение, b — основа, a — ответ, o — 4 формы одного корня (подходит одна)
+const WORDFORM = {
+  C:[{s:"He is a very ___ person. He always helps others.",b:"HELP",a:"helpful",o:["helpful","helper","helpless","helping"]},
+     {s:"My brother wants to become a ___ .",b:"SING",a:"singer",o:["singer","song","singing","sang"]},
+     {s:"It was the ___ day of my life.",b:"HAPPY",a:"happiest",o:["happiest","happier","happily","happiness"]},
+     {s:"Please drive ___ , the road is wet.",b:"CARE",a:"carefully",o:["carefully","careful","careless","care"]},
+     {s:"We need more ___ about the trip.",b:"INFORM",a:"information",o:["information","informative","informed","informer"]},
+     {s:"Smoking is ___ for your health.",b:"HARM",a:"harmful",o:["harmful","harmless","harmed","harm"]},
+     {s:"The film was so ___ that I fell asleep.",b:"BORE",a:"boring",o:["boring","bored","bore","boredom"]},
+     {s:"My ___ subject is History.",b:"FAVOUR",a:"favourite",o:["favourite","favourable","favoured","favour"]},
+     {s:"The weather was ___ cold yesterday.",b:"TERRIBLE",a:"terribly",o:["terribly","terrible","terror","terrify"]},
+     {s:"The ___ of the new school took two years.",b:"BUILD",a:"building",o:["building","built","builds","build"]}],
+  D:[{s:"His ___ to help us surprised everyone.",b:"WILLING",a:"willingness",o:["willingness","willing","willingly","unwilling"]},
+     {s:"The ___ of the new law caused protests.",b:"INTRODUCE",a:"introduction",o:["introduction","introductory","introduced","introducing"]},
+     {s:"This method doesn't work. It is completely ___ .",b:"EFFECT",a:"ineffective",o:["ineffective","effective","effectively","effect"]},
+     {s:"She spoke ___ about the problem.",b:"CONFIDENT",a:"confidently",o:["confidently","confident","confidence","unconfident"]},
+     {s:"The ___ of the city has doubled since 1990.",b:"POPULATE",a:"population",o:["population","populous","populated","populate"]},
+     {s:"We can't tolerate it. His behaviour is ___ .",b:"ACCEPT",a:"unacceptable",o:["unacceptable","acceptable","acceptance","accepted"]},
+     {s:"The museum has a large ___ of paintings.",b:"COLLECT",a:"collection",o:["collection","collector","collective","collecting"]},
+     {s:"Scientists made an important ___ .",b:"DISCOVER",a:"discovery",o:["discovery","discoverer","discovered","discovering"]},
+     {s:"Everyone admired his ___ .",b:"BRAVE",a:"bravery",o:["bravery","brave","bravely","braver"]},
+     {s:"The task turned out to be ___ easy.",b:"SURPRISE",a:"surprisingly",o:["surprisingly","surprising","surprised","surprise"]}]
+};
+
+/* =========================================================
+   2. ПРАВИЛА ТЕСТА (эталон: тест «Колтушская ДШИ»)
+   ========================================================= */
+const OPTIONS = 4;        // всегда ровно 4 варианта ответа, верный — один
+const MAX_LEN = 21;       // вопросов в одном варианте; больше — делим банк на равные варианты
+const markOf = p => p>=.9?5:p>=.75?4:p>=.55?3:2;
+const MARK_WORD = {5:"Отлично",4:"Хорошо",3:"Удовлетворительно",2:"Нужно повторить"};
+
+/* =========================================================
+   3. УТИЛИТЫ
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a };
+const fmtDate = d => new Date(d).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+const fmtTime = s => `${Math.floor(s/60)} мин ${s%60} с`;
+const plural = (n,a,b,c) => { const m=n%10, h=n%100; return m===1&&h!==11?a: m>=2&&m<=4&&(h<12||h>14)?b:c };
+const qWord = n => `${n} ${plural(n,"вопрос","вопроса","вопросов")}`;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>t.hidden=true,2600) }
+// Озвучка английского слова (если браузер умеет)
+function speak(text){ try{ const u=new SpeechSynthesisUtterance(text); u.lang="en-GB"; u.rate=.85; speechSynthesis.cancel(); speechSynthesis.speak(u) }catch(e){} }
+const ICON_SOUND = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 5 6 9H2v6h4l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>';
+// 3 неверных варианта из списка кандидатов: без повторов и без самого верного ответа
+function pick3(answer, candidates){
+  const out = [];
+  for(const c of shuffle(candidates)){ if(out.length>=OPTIONS-1) break; if(c!==answer && !out.includes(c)) out.push(c) }
+  return out;
+}
+// Делим банк на постоянные варианты одинакового размера (≤ MAX_LEN): раздача по кругу + добор повтором
+function makeVariants(list){
+  const n = Math.max(1, Math.ceil(list.length/MAX_LEN));
+  const vs = Array.from({length:n},(_,v)=>list.filter((_,i)=>i%n===v));
+  const len = Math.max(...vs.map(v=>v.length));
+  vs.forEach(v=>{ let k=Math.floor(list.length/2); while(v.length<len){ const x=list[k++%list.length]; if(!v.includes(x)) v.push(x) } });
+  return vs;
+}
+
+/* =========================================================
+   4. ТРЕНАЖЁРЫ: банк заданий + как из задания сделать вопрос
+   Вопрос: {key, ask, prompt (html), text (для отчёта), options, answer, explain (html), say}
+   ========================================================= */
+// Перестановки соседних слов для «Порядка слов» (без пар «подлежащее + вспомогательный глагол» — они дают вопрос, а не ошибку)
+const SUBJ = new Set("i you he she it we they this that there".split(" "));
+// Наречия частоты могут стоять в разных местах — их перестановка не всегда ошибка, поэтому не трогаем
+const ADV = new Set("never usually always often sometimes".split(" "));
+const AUX = new Set("will is are am was were have has had do does did can would must".split(" "));
+function sentenceCase(words){
+  // всё в нижнем регистре, кроме I и имён собственных; первое слово — с заглавной; точка/вопрос в конце
+  const s = words.map(w=> w==="I"||/^[A-Z][a-z]+$/.test(w)&&PROPER.has(w) ? w : w.toLowerCase()).join(" ");
+  const out = s.charAt(0).toUpperCase()+s.slice(1);
+  return out + (/^(do|does|did|are|is|can)\b/i.test(words[0]) ? "?" : ".");
+}
+const PROPER = new Set(["London","Paris","Sundays","Tom"]);
+function orderOptions(sentence){
+  const w = sentence.split(" "), cands = new Set();
+  for(let i=0;i<w.length-1;i++){
+    const a=w[i].toLowerCase(), b=w[i+1].toLowerCase();
+    if(a===b || (SUBJ.has(a)&&AUX.has(b)) || (AUX.has(a)&&SUBJ.has(b)) || ADV.has(a) || ADV.has(b)) continue;
+    const c=[...w]; [c[i],c[i+1]]=[c[i+1],c[i]]; cands.add(sentenceCase(c));
+  }
+  const right = sentenceCase(w);
+  let tries = 0;
+  while(cands.size<3 && tries++<50){ const c = shuffle(w); const t = sentenceCase(c); if(t!==right) cands.add(t) }
+  return {right, wrong:[...cands].filter(x=>x!==right)};
+}
+// Варианты для неправильных глаголов: «went — gone» и правдоподобные ошибки
+const regular = v => v==="be" ? "beed" : v.endsWith("e") ? v+"d" : v+"ed";
+function irregOptions([v1,v2,v3]){
+  const right = `${v2} — ${v3}`;
+  const c = [`${regular(v1)} — ${regular(v1)}`, `${v3} — ${v2}`, `${v2} — ${v2}`, `${v3} — ${v3}`, `${v1} — ${v3}`, `${v2} — ${regular(v1)}`, `${regular(v1)} — ${v3}`];
+  return {right, wrong:c.filter(x=>x!==right)};
+}
+
+const TRAINERS = [
+  {id:"en2ru", title:"Слова: английский → русский", desc:"Выбери перевод английского слова", bands:"ABCD",
+   bank: b => WORDS[b],
+   key: w => w[0],
+   q: (w,b) => ({ask:"Как переводится слово?", prompt:`<span class="prompt big">${esc(w[0])}</span>`, text:w[0],
+     answer:w[1], options:[w[1], ...pick3(w[1], WORDS[b].map(x=>x[1]))], explain:`<b>${esc(w[0])}</b> — ${esc(w[1])}`, say:w[0]})},
+  {id:"ru2en", title:"Слова: русский → английский", desc:"Выбери английское слово по переводу", bands:"ABCD",
+   bank: b => WORDS[b],
+   key: w => w[0],
+   q: (w,b) => ({ask:"Как это по-английски?", prompt:`<span class="prompt">${esc(w[1])}</span>`, text:w[1],
+     answer:w[0], options:[w[0], ...pick3(w[0], WORDS[b].map(x=>x[0]))], explain:`${esc(w[1])} — <b>${esc(w[0])}</b>`, say:w[0]})},
+  {id:"grammar", title:"Грамматика", desc:"Выбери верную форму для пропуска", bands:"ABCD",
+   bank: b => GRAMMAR[b],
+   key: g => g.q,
+   q: g => ({ask:"Вставь пропущенное", prompt:`<span class="prompt">${esc(g.q).replace("___",'<span class="gap">&nbsp;</span>')}</span>`, text:g.q,
+     answer:g.a, options:g.o, explain:`${esc(g.q.replace("___",g.a))}<br><span class="muted">${esc(g.h)}</span>`})},
+  {id:"order", title:"Порядок слов", desc:"Выбери предложение, где слова стоят правильно", bands:"ABCD",
+   bank: b => ORDER[b],
+   key: s => s,
+   q: s => { const o = orderOptions(s); return {ask:"Какое предложение составлено правильно?",
+     prompt:`<span class="prompt" style="font-size:18px;font-family:var(--f-body);font-weight:600">${shuffle(s.split(" ")).map(w=>esc(w.toLowerCase()==="i"?"I":w.toLowerCase())).join(" · ")}</span>`,
+     text:"Порядок слов: "+o.right, answer:o.right, options:[o.right, ...pick3(o.right, o.wrong)], explain:`<b>${esc(o.right)}</b>`} }},
+  {id:"irreg", title:"Неправильные глаголы", desc:"Выбери вторую и третью формы", bands:"BCD",
+   bank: () => IRREGULAR,
+   key: v => v[0],
+   q: v => { const o = irregOptions(v); return {ask:"Выбери V2 и V3", prompt:`<span class="prompt big">${esc(v[0])}</span><span class="sub">${esc(v[3])}</span>`, text:v[0],
+     answer:o.right, options:[o.right, ...pick3(o.right, o.wrong)], explain:`<b>${esc(v[0])} — ${esc(v[1])} — ${esc(v[2])}</b> · ${esc(v[3])}`, say:`${v[0]}, ${v[1].replace("/"," or ")}, ${v[2]}`} }},
+  {id:"wform", title:"Словообразование", desc:"Образуй нужное слово, как на экзамене", bands:"CD",
+   bank: b => WORDFORM[b],
+   key: w => w.b,
+   q: w => ({ask:"Какое слово подходит в пропуск?", prompt:`<span class="prompt"><span class="base">${esc(w.b)}</span>${esc(w.s).replace("___",'<span class="gap">&nbsp;</span>')}</span>`, text:`${w.b}: ${w.s}`,
+     answer:w.a, options:w.o, explain:esc(w.s.replace("___",w.a)).replace(esc(w.a),`<b>${esc(w.a)}</b>`)})}
+];
+const trainer = id => TRAINERS.find(t=>t.id===id);
+// Готовые варианты: VARIANTS[band][trainerId] = [[задания варианта 1], [варианта 2]…]
+const VARIANTS = {};
+for(const b in BANDS){ VARIANTS[b] = {}; TRAINERS.filter(t=>t.bands.includes(b)).forEach(t=>VARIANTS[b][t.id] = makeVariants(t.bank(b))) }
+function makeQ(t, item, band){ const q = t.q(item, band); q.options = shuffle(q.options); q.key = t.key(item); q.item = item; return q }
+
+/* =========================================================
+   5. СОСТОЯНИЕ (в браузере ученика). Имя НЕ запоминаем — поле пустое при каждом открытии
+   best  — лучшая оценка по каждому варианту;  known — задания, решённые верно с первой попытки
+   ========================================================= */
+const KEY = "pyaterka-en-v2";
+let S = {grade:5, best:{}, known:{}};
+try{ Object.assign(S, JSON.parse(localStorage.getItem(KEY))||{}) }catch(e){}
+S.best = S.best||{}; S.known = S.known||{};
+let NAME = "";
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)) }catch(e){} };
+const bestKey = (band,tid,v) => `${band}:${tid}:${v}`;
+const knownKey = (band,tid,key) => `${band}:${tid}:${key}`;
+
+/* =========================================================
+   6. ЭКРАНЫ
+   ========================================================= */
+let R = null; // текущий прогон: тест или работа над ошибками
+const brand = `<div class="brand"><h1>Пятёрка English</h1><span class="five" aria-hidden="true">5</span></div>`;
+
+// ---------- Главная: имя, класс, тренажёры с вариантами ----------
+function renderHome(){
+  R = null; window.scrollTo(0,0);
+  const band = gradeToBand(S.grade);
+  const list = TRAINERS.filter(t=>t.bands.includes(band));
+  let total = 0, known = 0;
+  list.forEach(t=>t.bank(band).forEach(it=>{ total++; if(S.known[knownKey(band,t.id,t.key(it))]) known++ }));
+  $("#app").innerHTML = `${brand}
+    <div class="card">
+      <span class="muted">Тесты по английскому для школы. Ошибся — выбери ещё раз, но в оценку идёт первый ответ. Варианты каждого тренажёра вместе охватывают все задания.</span>
+      <label class="field">Имя и фамилия
+        <input type="text" id="name" value="${esc(NAME)}" placeholder="Например, Анна Иванова" autocomplete="off"></label>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="label">Класс</span>
+        <div class="grades">${Array.from({length:11},(_,i)=>i+1).map(g=>`<button class="grade" data-g="${g}" aria-pressed="${g===S.grade}">${g}</button>`).join("")}</div>
+        <span class="muted" style="font-size:14px">${BANDS[band].name}: ${BANDS[band].note}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div class="row"><span class="label">Знаю с первой попытки</span><span class="num"><b>${known}</b> из ${total} заданий</span></div>
+        <div class="pbar"><i style="width:${known/total*100}%;background:var(--ok)"></i></div>
+      </div>
+    </div>
+    <section class="trainers">${list.map(t=>{
+      const vs = VARIANTS[band][t.id];
+      return `<div class="trainer"><h3>${t.title}</h3><p>${t.desc}</p>
+        <div class="vars">${vs.map((v,i)=>{ const b = S.best[bestKey(band,t.id,i)];
+          return `<button class="var" data-t="${t.id}" data-v="${i}">
+            <span class="vbody"><b>${vs.length>1?`Вариант ${i+1}`:"Начать тест"}</b><span class="muted num">${qWord(v.length)}</span></span>
+            ${b?`<span class="vbest" title="Лучшая оценка ${b.right}/${b.total}">${b.mark}</span>`:`<span class="vbest none">—</span>`}
+          </button>`}).join("")}</div></div>`}).join("")}
+    </section>
+    <div class="actions" style="flex-direction:column;align-items:flex-start"><button class="linkbtn" id="reset">Сбросить результаты</button><div id="rbox" hidden style="width:100%"></div></div>`;
+  $("#name").oninput = e=>{ NAME = e.target.value.slice(0,60); e.target.classList.remove("wrong") };
+  $$(".grade").forEach(b=>b.onclick=()=>{ S.grade=+b.dataset.g; save(); renderHome() });
+  $$(".var").forEach(b=>b.onclick=()=>startTest(b.dataset.t, +b.dataset.v));
+  $("#reset").onclick = ()=>{
+    const box=$("#rbox"); box.hidden=false;
+    box.innerHTML=`<div class="confirm"><b>Сбросить результаты?</b><span>Удалятся лучшие оценки и счётчик «Знаю с первой попытки» по всем классам.</span>
+      <div class="actions"><button class="btn danger" id="yes">Сбросить</button><button class="btn ghost" id="no">Отмена</button></div></div>`;
+    $("#no").onclick=()=>box.hidden=true;
+    $("#yes").onclick=()=>{ S.best={}; S.known={}; save(); toast("Результаты сброшены"); renderHome() };
+  };
+}
+
+// ---------- Запуск теста: имя обязательно ----------
+function startTest(tid, v){
+  if(!NAME.trim()){ const n=$("#name"); n.classList.add("wrong"); n.scrollIntoView({block:"center"}); n.focus(); toast("Впиши имя — оно будет в результате"); return }
+  const band = gradeToBand(S.grade), t = trainer(tid);
+  R = {tid, band, variant:v, nv:VARIANTS[band][tid].length,
+       qs:shuffle(VARIANTS[band][tid][v]).map(it=>makeQ(t,it,band)), i:0, answers:[], start:Date.now()};
+  renderQ();
+}
+// Работа над ошибками: только задания с ошибкой, без оценки
+function startPractice(items, tid, band){
+  const t = trainer(tid);
+  R = {practice:true, tid, band, qs:shuffle(items).map(it=>makeQ(t,it,band)), i:0, answers:[], start:Date.now()};
+  renderQ();
+}
+const runLabel = r => `${trainer(r.tid).title}${r.nv>1?` · Вариант ${r.variant+1}`:""}`;
+
+// ---------- Вопрос ----------
+function renderQ(){
+  const q = R.qs[R.i];
+  window.scrollTo(0,0);
+  R.tries = 0; R.locked = false;
+  $("#app").innerHTML = `
+    <div class="qhead"><button class="back" id="back">Выйти из теста полностью</button>
+      <span class="muted num">${R.practice?"Работа над ошибками":BANDS[R.band].name} · ${R.i+1} / ${R.qs.length}</span></div>
+    <div class="pbar"><i style="width:${R.i/R.qs.length*100}%"></i></div>
+    <div class="card">
+      <span class="ask">${esc(q.ask)}</span>
+      ${q.prompt}
+      <div class="opts">${q.options.map(o=>`<button class="opt" data-o="${esc(o)}">${esc(o)}</button>`).join("")}</div>
+      <div class="hint" id="hint" aria-live="polite"></div>
+    </div>
+    <div id="exit" hidden></div>`;
+  $("#back").onclick = confirmExit;
+  $$(".opt").forEach(b=>b.onclick=()=>pick(b));
+}
+
+// Ответ: ошибка — красным, можно выбрать ещё; в результат идёт только первая попытка
+function pick(b){
+  if(R.locked || b.disabled) return;
+  const q = R.qs[R.i], ok = b.dataset.o===q.answer;
+  if(R.tries===0){
+    R.answers.push({q, given:b.dataset.o, ok});
+    if(ok){ S.known[knownKey(R.band,R.tid,q.key)] = true; save() }
+  }
+  R.tries++;
+  if(!ok){
+    b.classList.add("wrong"); b.disabled = true;
+    $("#hint").textContent = "Неверно. Подумай и выбери другой ответ.";
+    return;
+  }
+  R.locked = true;
+  b.classList.add("right");
+  $$(".opt").forEach(x=>x.disabled=true);
+  $("#hint").innerHTML = `<span class="oktxt" style="color:var(--ok)">${R.tries===1?"Верно!":"Теперь верно. В результат пойдёт ошибка."}</span>
+    <span style="color:var(--fg);font-weight:500">${q.explain}</span>
+    ${q.say?`<button class="speak" id="say">${ICON_SOUND} Послушать</button>`:""}
+    <div class="actions"><button class="btn" id="next">${R.i+1<R.qs.length?"Дальше":"Итоги"}</button></div>`;
+  if(q.say) $("#say").onclick = ()=>speak(q.say);
+  $("#next").onclick = next; $("#next").focus({preventScroll:true});
+}
+function next(){ R.i++; R.i<R.qs.length ? renderQ() : (R.practice?finishPractice():finish()) }
+
+// Выход только после подтверждения в окне поверх вопроса
+function confirmExit(){
+  const box=$("#exit"); box.hidden=false;
+  box.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="exit-t"><div class="box">
+    <h3 id="exit-t">Вы точно хотите выйти из теста?</h3>
+    <span class="muted">Тест закончится, ответы этого прохода не сохранятся и оценки не будет.</span>
+    <div class="actions"><button class="btn ghost" id="no">Нет, остаться</button><button class="btn danger" id="yes">Да, выйти</button></div>
+  </div></div>`;
+  $("#no").focus();
+  $("#yes").onclick=renderHome; $("#no").onclick=()=>{ box.hidden=true; box.innerHTML="" };
+}
+
+// ---------- Итог теста (экран для преподавателя) ----------
+function finish(){
+  const right = R.answers.filter(a=>a.ok).length, total = R.answers.length;
+  const r = {date:Date.now(), name:NAME.trim(), tid:R.tid, band:R.band, variant:R.variant, nv:R.nv, right, total, mark:markOf(right/total),
+    secs:Math.round((Date.now()-R.start)/1000),
+    mistakes:R.answers.filter(a=>!a.ok).map(a=>({task:a.q.text, right:a.q.answer, given:a.given, item:a.q.item}))};
+  const k = bestKey(r.band,r.tid,r.variant), prev = S.best[k];
+  if(!prev || r.right>prev.right) S.best[k] = {mark:r.mark, right:r.right, total:r.total, date:r.date};
+  save();
+  sendToTeacher(r);
+  renderReport(r);
+}
+// Заготовка: отправка результата на сервер / устройство преподавателя. Сейчас ничего не делает.
+// Позже: fetch("https://…/results",{method:"POST",body:JSON.stringify(r)})
+function sendToTeacher(r){ /* TODO */ }
+
+function renderReport(r){
+  window.scrollTo(0,0);
+  const nextV = (r.variant+1)%r.nv;
+  $("#app").innerHTML = `${brand}
+    <div class="card">
+      <div class="report-head">
+        <div class="meta"><span class="label">${esc(runLabel(r))} · ${BANDS[r.band].name}</span>
+          <h2>${esc(r.name)}</h2><span class="muted num">${fmtDate(r.date)}</span>
+          <b style="margin-top:6px">${MARK_WORD[r.mark]}</b></div>
+        <div class="mark" aria-label="Оценка ${r.mark}">${r.mark}</div>
+      </div>
+      <div class="facts num">
+        <div class="fact"><b>${r.right} из ${r.total}</b><span>верно с первой попытки</span></div>
+        <div class="fact"><b>${Math.round(r.right/r.total*100)}%</b><span>результат</span></div>
+        <div class="fact"><b>${fmtTime(r.secs)}</b><span>время</span></div>
+      </div>
+      ${r.mistakes.length?`<span class="label">Ошибки · ${r.mistakes.length}</span>
+        <div class="tbl-wrap"><table class="mist"><thead><tr><th>Задание</th><th>Правильно</th><th>Первый ответ</th></tr></thead><tbody>
+        ${r.mistakes.map(m=>`<tr><td><b>${esc(m.task)}</b></td><td class="oktxt" data-l="Правильно">${esc(m.right)}</td><td data-l="Первый ответ"><span class="wrongtxt">${esc(m.given)}</span></td></tr>`).join("")}
+        </tbody></table></div>`:`<p class="oktxt" style="margin:0">Без ошибок</p>`}
+      <div class="actions">
+        ${r.mistakes.length?`<button class="btn" id="fix">Работа над ошибками · ${r.mistakes.length}</button>`:""}
+        <button class="btn ${r.mistakes.length?"ghost":""}" id="next">${r.nv>1?`Вариант ${nextV+1}`:"Пройти ещё раз"}</button>
+        <button class="btn ghost" id="copy">Скопировать для преподавателя</button>
+        <button class="btn ghost" id="home">К тренажёрам</button></div>
+    </div>`;
+  if(r.mistakes.length) $("#fix").onclick = ()=>startPractice(r.mistakes.map(m=>m.item), r.tid, r.band);
+  $("#next").onclick = ()=>startTest(r.tid, nextV);
+  $("#copy").onclick = ()=>copyResult(r);
+  $("#home").onclick = renderHome;
+}
+
+// ---------- Итог работы над ошибками (без оценки) ----------
+function finishPractice(){
+  const still = R.answers.filter(a=>!a.ok).map(a=>a.q.item);
+  const {tid, band} = R;
+  window.scrollTo(0,0);
+  $("#app").innerHTML = `${brand}
+    <div class="card">
+      <span class="label">Работа над ошибками · ${esc(trainer(tid).title)}</span>
+      <h2>${still.length?`Осталось ${still.length} ${plural(still.length,"задание","задания","заданий")}`:"Все ошибки исправлены"}</h2>
+      <p class="muted" style="margin:0">${still.length?"Повтори их ещё раз, пока не ответишь верно с первой попытки.":"Можно возвращаться к тесту и улучшать оценку."}</p>
+      <div class="actions">
+        ${still.length?`<button class="btn" id="again">Повторить ${still.length}</button>`:""}
+        <button class="btn ${still.length?"ghost":""}" id="home">К тренажёрам</button></div>
+    </div>`;
+  if(still.length) $("#again").onclick = ()=>startPractice(still, tid, band);
+  $("#home").onclick = renderHome;
+}
+
+// Текст результата для мессенджера
+function copyResult(r){
+  const txt = [`Пятёрка English · ${runLabel(r)}`,`${BANDS[r.band].name}`,`Ученик: ${r.name}`,`Дата: ${fmtDate(r.date)}`,
+    `Результат: ${r.right} из ${r.total} (${Math.round(r.right/r.total*100)}%), оценка ${r.mark}`,`Время: ${fmtTime(r.secs)}`,
+    ...(r.mistakes.length?["Ошибки:",...r.mistakes.map(m=>`• ${m.task} — верно: ${m.right} (ответ: ${m.given})`)]:["Без ошибок"])].join("\n");
+  const fallback = ()=>{ // буфер обмена недоступен — показываем текст для ручного копирования
+    if($("#manual")) return;
+    const ta=document.createElement("textarea"); ta.id="manual"; ta.value=txt; ta.rows=8;
+    ta.style.cssText="width:100%;font:inherit;font-size:14px;padding:10px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--fg)";
+    $("#copy").closest(".card").appendChild(ta); ta.select(); toast("Выдели и скопируй текст вручную");
+  };
+  try{ navigator.clipboard.writeText(txt).then(()=>toast("Скопировано — отправь преподавателю"), fallback) }catch(e){ fallback() }
+}
+
+renderHome();
+</script>
+</html>

@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Слова Spotlight 6</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Концепция: тетрадь в клетку, синие чернила ученика и красная ручка учителя (семейство «Пятёрка English») */
+:root{
+  --paper:#F7F9FD; --card:#FFFFFF; --fg:#172033; --muted:#5A6580; --line:#D8E1F1;
+  --ink:#2340A0; --ink-soft:#E3EAFB; --red:#D3242C; --red-soft:#FCE6E7;
+  --ok:#1E8A4C; --ok-soft:#E1F4E8; --grid:rgba(35,64,160,.07);
+  --dd:rgba(35,64,160,.16); --dd2:rgba(211,36,44,.18); --dd3:rgba(240,170,20,.32); --blob1:rgba(90,130,255,.16); --blob2:rgba(255,120,140,.12);
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-hand:"Caveat","Comic Sans MS",cursive;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1422; --card:#161F33; --fg:#E7ECF6; --muted:#97A3BC; --line:#26314B;
+  --ink:#8AA8FF; --ink-soft:#1E2A4A; --red:#FF6A6F; --red-soft:#3A1C22;
+  --ok:#4FD08A; --ok-soft:#163626; --grid:rgba(138,168,255,.06); --dd:rgba(138,168,255,.20); --dd2:rgba(255,106,111,.20); --dd3:rgba(255,200,80,.26); --blob1:rgba(90,130,255,.16); --blob2:rgba(255,120,140,.08); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E1422; --card:#161F33; --fg:#E7ECF6; --muted:#97A3BC; --line:#26314B;
+  --ink:#8AA8FF; --ink-soft:#1E2A4A; --red:#FF6A6F; --red-soft:#3A1C22;
+  --ok:#4FD08A; --ok-soft:#163626; --grid:rgba(138,168,255,.06); --dd:rgba(138,168,255,.20); --dd2:rgba(255,106,111,.20); --dd3:rgba(255,200,80,.26); --blob1:rgba(90,130,255,.16); --blob2:rgba(255,120,140,.08); color-scheme:dark}
+
+/* Сброс — файл открывается и напрямую в браузере телефона */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+[hidden]{display:none!important}
+body{margin:0;background-color:var(--paper);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px}
+.wrap{max-width:820px;margin:0 auto;padding-block:16px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.muted{color:var(--muted)}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.num{font-variant-numeric:tabular-nums}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.brand h1{font-size:clamp(22px,6vw,30px);color:var(--ink)}
+.brand .sub{font-family:var(--f-hand);font-size:28px;line-height:1;color:var(--red);transform:rotate(-3deg);display:inline-block}
+
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:16px}
+label.field{display:flex;flex-direction:column;gap:6px;font-weight:700}
+input[type=text]{font:inherit;font-size:18px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--fg);width:100%}
+input.wrong{border-color:var(--red);background:var(--red-soft)}
+
+/* Направление */
+.dirs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dir{display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--paper)}
+.dir[aria-pressed="true"]{border-color:var(--ink);background:var(--ink-soft)}
+.dir b{font-size:16px}
+.dir .ex{font-size:14px;color:var(--muted)}
+.dir .ex i{font-style:normal;font-weight:700;color:var(--ink)}
+
+/* Модули */
+.modules{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.module{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:14px;background:var(--card);border:1.5px solid var(--line)}
+.module .mn{font-family:var(--f-hand);font-size:30px;line-height:.8;color:var(--red)}
+.module h3{font-size:15px}
+.module .ru{font-size:14px;color:var(--muted)}
+.vars{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+.var{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);min-height:52px}
+.var:hover{border-color:var(--ink)}
+.var .vbody{flex:1;min-width:0;display:flex;flex-direction:column;font-size:14px;line-height:1.3}
+.var .vbody b{font-size:15px}
+.vbest{font-family:var(--f-hand);font-size:30px;line-height:1;color:var(--red);min-width:22px;text-align:center}
+.vbest.none{font-family:var(--f-body);font-size:14px;color:var(--muted)}
+.pbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.linkbtn{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;font-size:14px;width:max-content}
+
+/* Вопрос */
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.back{background:none;border:1.5px solid var(--line);border-radius:99px;color:var(--muted);padding:6px 14px;font-weight:600;font-size:14px}
+.back:hover{border-color:var(--red);color:var(--red)}
+.ask{font-size:14px;color:var(--muted);font-weight:600}
+.prompt{display:block;font-family:var(--f-display);font-size:clamp(22px,5.5vw,30px);line-height:1.3;overflow-wrap:anywhere}
+.prompt.en{font-size:clamp(30px,8vw,46px);color:var(--ink)}
+.opts{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:600px){.opts{grid-template-columns:1fr 1fr}}
+.opt{padding:14px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);text-align:left;font-weight:600;font-size:17px;min-height:58px}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--red);background:var(--red-soft);color:var(--red);text-decoration:line-through;cursor:default}
+.hint{min-height:24px;font-weight:700;color:var(--red)}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:14px 22px;border-radius:12px;border:none;background:var(--ink);color:var(--card);font-weight:700;font-size:16px}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--fg)}
+.btn.danger{background:var(--red);color:#fff}
+.confirm{border:1.5px solid var(--red);background:var(--red-soft);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.modal{position:fixed;inset:0;z-index:10;background:rgba(10,14,25,.55);display:grid;place-items:center;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal .box{background:var(--card);border-radius:18px;padding:22px;max-width:380px;width:100%;display:flex;flex-direction:column;gap:12px}
+.modal h3{font-size:18px}
+
+/* Итог — экран для преподавателя */
+.report-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.report-head .meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.report-head h2{font-size:20px}
+.mark{font-family:var(--f-hand);font-size:120px;line-height:.8;color:var(--red);border:3px solid var(--red);border-radius:50%;
+  width:130px;height:130px;display:grid;place-items:center;transform:rotate(-6deg);flex:none}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.fact{background:var(--paper);border-radius:12px;padding:10px 12px}
+.fact b{display:block;font-size:20px;font-weight:800}
+.fact span{font-size:12px;color:var(--muted)}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.wrongtxt{color:var(--red);text-decoration:line-through}
+.oktxt{color:var(--ok);font-weight:700}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--paper);padding:10px 18px;border-radius:99px;font-weight:600;font-size:14px;z-index:20}
+
+/* Телефон */
+@media (max-width:560px){
+  body{font-size:17px}
+  .wrap{padding-block:10px 32px;gap:14px}
+  .card{padding:18px 16px}
+  .dirs,.modules{grid-template-columns:1fr}
+  .actions .btn{flex:1 1 100%;padding:16px;font-size:17px}
+  .mark{width:96px;height:96px;font-size:86px}
+  table.mist thead{display:none}
+  table.mist tr{display:flex;flex-direction:column;gap:2px;padding:10px 0;border-bottom:1px solid var(--line)}
+  table.mist td{border:none;padding:0}
+  table.mist td[data-l]::before{content:attr(data-l);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-top:6px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Фон для школьников: клетка + цветные пятна + «каракули на полях» (карандаш, книга, ABC, звёзды, глобус, ракета) */
+body{background-image:radial-gradient(circle at 12% 8%,var(--blob1),transparent 45%),radial-gradient(circle at 92% 30%,var(--blob2),transparent 42%),
+  linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:auto,auto,22px 22px,22px 22px;background-attachment:fixed,fixed,scroll,scroll}
+.doodles{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;overflow:hidden}
+.wrap{position:relative;z-index:1}
+.fl{animation:bob 6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.fl.b{animation-duration:8s;animation-delay:-3s}
+@keyframes bob{50%{transform:translateY(-10px) rotate(6deg)}}
+@media (prefers-reduced-motion:reduce){.fl{animation:none}}
+</style>
+
+<!-- декоративный фон (не читается скринридерами) -->
+<svg class="doodles" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+<defs><pattern id="dd" width="260" height="260" patternUnits="userSpaceOnUse">
+ <g fill="none" stroke="var(--dd)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(24 60) rotate(-35)"><rect x="0" y="0" width="52" height="12" rx="2"/><path d="M52 0l12 6-12 6M10 0v12"/></g>
+  <g transform="translate(150 22)"><path d="M0 6c10-4 20-4 28 2 8-6 18-6 28-2v34c-10-4-20-4-28 2-8-6-18-6-28-2zM28 8v34"/></g>
+  <g transform="translate(168 120)"><circle cx="22" cy="22" r="20"/><ellipse cx="22" cy="22" rx="8" ry="20"/><path d="M2 22h40M5 12h34M5 32h34"/></g>
+  <g transform="translate(100 190)"><path d="M10 34a10 10 0 010-20 14 14 0 0126-4 12 12 0 0112 24z"/></g>
+  <g transform="translate(14 200)"><path d="M16 30c-12-8-12-26 4-28 14 2 16 20 4 28v8h-8zM12 44h14"/></g>
+ </g>
+ <text x="30" y="150" font-family="Unbounded,Arial Black,sans-serif" font-size="22" font-weight="700" fill="var(--dd)" transform="rotate(-8 30 150)">ABC</text>
+ <g fill="none" stroke="var(--dd2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(205 200) rotate(35)"><path d="M0 0c10-14 20-14 24 0v30h-24zM-6 30l6-8M30 30l-6-8M12 36v8"/><circle cx="12" cy="14" r="4"/></g>
+  <path d="M110 120c-8-10-22 0-12 12l12 12 12-12c10-12-4-22-12-12z"/>
+ </g>
+ <g fill="var(--dd3)">
+  <path d="M100 30l4 9 10 1-8 7 2 10-8-5-8 5 2-10-8-7 10-1z"/>
+  <path d="M236 90l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/>
+  <path d="M70 105l2.5 5 6 1-4.5 4 1 6-5-3-5 3 1-6-4.5-4 6-1z"/>
+ </g>
+</pattern></defs>
+<rect width="100%" height="100%" fill="url(#dd)"/>
+</svg>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =========================================================
+   1. СЛОВА ПО МОДУЛЯМ «Английский в фокусе / Spotlight 6»
+   Формат: [английский, русский]. Пары подобраны так, чтобы у каждого слова был один однозначный перевод
+   ========================================================= */
+const MODULES = [
+  {n:1, en:"Who's who", ru:"Кто есть кто", words:[
+    ["father-in-law","свёкор, тесть"],["mother-in-law","свекровь, тёща"],["daughter","дочь"],["son","сын"],
+    ["granddaughter","внучка"],["grandson","внук"],["grandmother","бабушка"],["grandfather","дедушка"],
+    ["sister","сестра"],["brother","брат"],["cousin","двоюродный брат или сестра"],["twins","близнецы"],
+    ["wife","жена"],["husband","муж"],["aunt","тётя"],["uncle","дядя"],["nephew","племянник"],["niece","племянница"],
+    ["full name","полное имя"],["home address","домашний адрес"],["nationality","национальность"],
+    ["identification number","идентификационный номер"],["expiry date","дата окончания срока действия"],
+    ["telephone number","номер телефона"],["postcode","почтовый индекс"]]},
+  {n:2, en:"Here we are!", ru:"Вот и мы!", words:[
+    ["dining room","столовая"],["living room","гостиная"],["bedroom","спальня"],["kitchen","кухня"],["bathroom","ванная комната"],
+    ["study","кабинет"],["wardrobe","платяной шкаф"],["cupboard","буфет, шкаф для посуды"],["mirror","зеркало"],["bathtub","ванна"],
+    ["shelves","полки"],["vase","ваза"],["ceiling","потолок"],["curtains","шторы"],["fireplace","камин"],
+    ["coffee table","журнальный столик"],["cushions","диванные подушки"],["armchair","кресло"],["lamp","лампа"],
+    ["post office","почта"],["bank","банк"],["baker's","булочная"],["greengrocer's","овощной магазин"],["supermarket","супермаркет"],
+    ["library","библиотека"],["pet shop","зоомагазин"],["sports shop","спортивный магазин"],
+    ["avenue","проспект"],["boulevard","бульвар"],["lane","переулок"],["street","улица"],["narrow","узкий"]]},
+  {n:3, en:"Getting around", ru:"В пути", words:[
+    ["traffic lights","светофор"],["pavement","тротуар"],["pedestrian","пешеход"],["zebra crossing","пешеходный переход «зебра»"],
+    ["traffic warden","регулировщик"],["traffic sign","дорожный знак"],["seat belt","ремень безопасности"],["kerb","бордюр, край тротуара"],
+    ["bike lane","велосипедная дорожка"],["speed limit","ограничение скорости"],["route","маршрут"],["cross","переходить (дорогу)"],
+    ["turn left","повернуть налево"],["turn right","повернуть направо"],["driver","водитель"],["passenger","пассажир"],
+    ["luggage","багаж"],["underground","метро"],["double-decker bus","двухэтажный автобус"],["upper deck","верхний этаж автобуса"],
+    ["chandeliers","люстры"]]},
+  {n:4, en:"Day after day", ru:"День за днём", words:[
+    ["brush teeth","чистить зубы"],["go to bed","ложиться спать"],["have breakfast","завтракать"],["have supper","ужинать"],
+    ["routine","распорядок дня"],["habit","привычка"],["sitcom","комедийный сериал"],["drama","драма"],["news","новости"],
+    ["reality show","реалити-шоу"],["science fiction","научная фантастика"],["talk show","ток-шоу"],["exciting","захватывающий"],
+    ["delicious","очень вкусный"],["enjoyable","приятный"],["wonderful","чудесный"],["boring","скучный"],["awful","ужасный"],
+    ["disgusting","отвратительный"],["hate","ненавидеть"],["Count me in!","Рассчитывай на меня!"]]},
+  {n:5, en:"Feasts", ru:"Праздники", words:[
+    ["make decorations","делать украшения"],["make a phone call","звонить по телефону"],["do the dusting","вытирать пыль"],
+    ["do the gardening","работать в саду"],["do the washing-up","мыть посуду"],["do the shopping","ходить за покупками"],
+    ["celebrate","праздновать"],["bake","печь, выпекать"],["grapes","виноград"],["exchange gifts","обмениваться подарками"],
+    ["wear costumes","надевать костюмы"],["watch parades","смотреть парады"],["fireworks display","фейерверк, салют"],
+    ["witch","ведьма"],["guests","гости"],["dress up","наряжаться"],["pray","молиться"],["take part","принимать участие"],
+    ["compete","соревноваться"],["tug of war","перетягивание каната"],["carnations","гвоздики"],["daisies","маргаритки"],
+    ["tulips","тюльпаны"],["roses","розы"],["sunflowers","подсолнухи"]]},
+  {n:6, en:"Leisure activities", ru:"Досуг", words:[
+    ["read books","читать книги"],["go windsurfing","заниматься виндсёрфингом"],["go cycling","кататься на велосипеде"],
+    ["go fishing","ходить на рыбалку"],["paint","рисовать красками"],["play computer games","играть в компьютерные игры"],
+    ["chess","шахматы"],["darts","дартс"],["billiards","бильярд"],["jigsaw puzzle","пазл"],["marbles","шарики (игра)"],
+    ["backgammon","нарды"],["dominoes","домино"],["board games","настольные игры"],["win a game","выиграть игру"],
+    ["lose a game","проиграть игру"],["roller skates","роликовые коньки"],["glove puppet","перчаточная кукла"],
+    ["cloth","ткань"],["leather","кожа"],["rubber","резина"]]},
+  {n:7, en:"Now and then", ru:"Тогда и сейчас", words:[
+    ["clean","чистый"],["busy","оживлённый, шумный"],["crowded","переполненный людьми"],["ugly","уродливый"],
+    ["polluted","загрязнённый"],["quiet","тихий"],["deserted","пустынный"],["ghost town","город-призрак"],
+    ["railway station","железнодорожный вокзал"],["newsagent's","газетный киоск"],["worried","обеспокоенный"],
+    ["scared","испуганный"],["excited","взволнованный (в радостном ожидании)"],["miserable","несчастный"],
+    ["puzzled","озадаченный"],["tired","уставший"],["rescue","спасать"],["sunglasses","солнцезащитные очки"],
+    ["umbrella","зонт"],["rocking horse","лошадка-качалка"],["doll's house","кукольный домик"]]},
+  {n:8, en:"Rules and regulations", ru:"Правила и инструкции", words:[
+    ["palace","дворец"],["tent","палатка"],["cottage","коттедж"],["block of flats","многоквартирный дом"],
+    ["halls of residence","студенческое общежитие"],["swimming pool","бассейн"],["aquarium","аквариум"],["theatre","театр"],
+    ["department store","универмаг"],["stadium","стадион"],["gallery","галерея"],["gym","спортзал"],["cinema","кинотеатр"],
+    ["sports centre","спортивный центр"],["zoo","зоопарк"]]},
+  {n:9, en:"Food and drinks", ru:"Еда и напитки", words:[
+    ["honey","мёд"],["olive oil","оливковое масло"],["cheese","сыр"],["meat","мясо"],["biscuit","печенье"],["onion","лук"],
+    ["salt","соль"],["pepper","перец"],["rice","рис"],["carrot","морковь"],["potato","картофель"],["dairy products","молочные продукты"],
+    ["bottle","бутылка"],["carton","пакет (молока, сока)"],["jar","банка"],["loaf","буханка"],["bar","плитка (шоколада)"],
+    ["cereal","хлопья"],["bitter","горький"],["salty","солёный"],["sweet","сладкий"],["spicy","острый, пряный"],["sour","кислый"],
+    ["starters","закуски"],["main course","основное блюдо"],["dessert","десерт"],["boil","варить"],["fry","жарить"],
+    ["stir","помешивать"],["peel","чистить (от кожуры)"],["recipe","рецепт"],["ingredients","ингредиенты"]]},
+  {n:10, en:"Holiday time", ru:"Каникулы", words:[
+    ["visit museums","посещать музеи"],["go sightseeing","осматривать достопримечательности"],["attend a performance","посетить представление"],
+    ["stay in a hotel","остановиться в гостинице"],["taste local food","пробовать местную еду"],["hire a car","взять машину напрокат"],
+    ["buy souvenirs","покупать сувениры"],["take pictures","фотографировать"],["rainy","дождливый"],["cloudy","облачный"],
+    ["windy","ветреный"],["foggy","туманный"],["snowy","снежный"],["sunny","солнечный"],["chilly","прохладный"],
+    ["stormy","штормовой"],["wet","сырой, влажный"],["temperature","температура"],["degrees","градусы"],["sweater","свитер"]]}
+];
+
+/* =========================================================
+   2. ПРАВИЛА ТЕСТА (эталон: тест «Колтушская ДШИ»)
+   ========================================================= */
+const OPTIONS = 4;      // всегда ровно 4 варианта ответа
+const MAX_LEN = 21;     // вопросов в варианте; больше — делим модуль на равные варианты
+const DIRS = {
+  e2r:{name:"Английский → русский", ask:"Как переводится слово?", ex:'<i>niece</i> → племянница'},
+  r2e:{name:"Русский → английский", ask:"Как это по-английски?", ex:'племянница → <i>niece</i>'}
+};
+const markOf = p => p>=.9?5:p>=.75?4:p>=.55?3:2;
+const MARK_WORD = {5:"Отлично",4:"Хорошо",3:"Удовлетворительно",2:"Нужно повторить"};
+
+/* =========================================================
+   3. УТИЛИТЫ
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a };
+const fmtDate = d => new Date(d).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+const fmtTime = s => `${Math.floor(s/60)} мин ${s%60} с`;
+const plural = (n,a,b,c) => { const m=n%10, h=n%100; return m===1&&h!==11?a: m>=2&&m<=4&&(h<12||h>14)?b:c };
+const wordsN = n => `${n} ${plural(n,"слово","слова","слов")}`;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>t.hidden=true,2600) }
+function speak(text){ try{ const u=new SpeechSynthesisUtterance(text); u.lang="en-GB"; u.rate=.85; speechSynthesis.cancel(); speechSynthesis.speak(u) }catch(e){} }
+// Части перевода через запятую — по ним отсекаем синонимы, чтобы верный вариант был один
+const chunks = s => s.toLowerCase().replace(/ё/g,"е").replace(/\(.*?\)/g,"").split(/[,;]/).map(x=>x.trim()).filter(Boolean);
+const overlap = (a,b) => chunks(a).some(c=>chunks(b).includes(c));
+
+// Слова: модуль, пул для неверных вариантов — свой модуль
+const WORDS = [];
+MODULES.forEach(m=>m.words.forEach(([en,ru])=>WORDS.push({en,ru,m:m.n})));
+const moduleWords = n => WORDS.filter(w=>w.m===n);
+
+// Постоянные варианты одинаковой длины (≤ MAX_LEN): раздача по кругу + добор повтором
+function makeVariants(list){
+  const n = Math.max(1, Math.ceil(list.length/MAX_LEN));
+  const vs = Array.from({length:n},(_,v)=>list.filter((_,i)=>i%n===v));
+  const len = Math.max(...vs.map(v=>v.length));
+  vs.forEach(v=>{ let k=Math.floor(list.length/2); while(v.length<len){ const x=list[k++%list.length]; if(!v.includes(x)) v.push(x) } });
+  return vs;
+}
+const VARIANTS = Object.fromEntries(MODULES.map(m=>[m.n, makeVariants(moduleWords(m.n))]));
+
+// 3 неверных варианта: из того же модуля, без синонимов верного и друг друга
+function distract(w){
+  const res = [];
+  for(const x of shuffle(moduleWords(w.m))){
+    if(res.length>=OPTIONS-1) break;
+    if(x!==w && !overlap(x.ru,w.ru) && !res.some(r=>overlap(r.ru,x.ru))) res.push(x);
+  }
+  return res;
+}
+function makeQuestion(w, dir){
+  const opts = shuffle([w, ...distract(w)]);
+  return dir==="e2r"
+    ? {w, prompt:w.en, promptEn:true, options:opts.map(x=>x.ru), answer:w.ru}
+    : {w, prompt:w.ru, promptEn:false, options:opts.map(x=>x.en), answer:w.en};
+}
+
+/* =========================================================
+   4. СОСТОЯНИЕ (в браузере). Имя НЕ запоминаем — поле пустое при каждом открытии
+   ========================================================= */
+const KEY = "spotlight6-words-v1";
+let S = {dir:"e2r", best:{}, known:{}};
+try{ Object.assign(S, JSON.parse(localStorage.getItem(KEY))||{}) }catch(e){}
+S.best = S.best||{}; S.known = S.known||{};
+let NAME = "";
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)) }catch(e){} };
+const bestKey = (dir,m,v) => `${dir}:${m}:${v}`;
+
+/* =========================================================
+   5. ЭКРАНЫ
+   ========================================================= */
+let R = null;
+const brand = `<div class="brand"><h1>Spotlight 6</h1><span class="sub">слова и перевод</span></div>`;
+const runLabel = r => `Модуль ${r.m}${r.nv>1?` · Вариант ${r.v+1}`:""}`;
+
+// ---------- Главная ----------
+function renderHome(){
+  R = null; window.scrollTo(0,0);
+  const known = WORDS.filter(w=>S.known[w.en]).length;
+  $("#app").innerHTML = `${brand}
+    <div class="card">
+      <span class="muted">Тест по словам учебника «Английский в фокусе» (Spotlight) для 6 класса: ${MODULES.length} модулей, ${wordsN(WORDS.length)}. Ошибся — выбери ещё раз, но в оценку идёт первый ответ.</span>
+      <label class="field">Имя и фамилия
+        <input type="text" id="name" value="${esc(NAME)}" placeholder="Например, Анна Иванова" autocomplete="off"></label>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="label">Направление</span>
+        <div class="dirs">${Object.entries(DIRS).map(([k,d])=>
+          `<button class="dir" data-dir="${k}" aria-pressed="${S.dir===k}"><b>${d.name}</b><span class="ex">${d.ex}</span></button>`).join("")}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div class="row"><span class="label">Знаю с первой попытки</span><span class="num"><b>${known}</b> из ${WORDS.length}</span></div>
+        <div class="pbar"><i style="width:${known/WORDS.length*100}%;background:var(--ok)"></i></div>
+      </div>
+    </div>
+    <span class="label">Выбери модуль и вариант</span>
+    <section class="modules">${MODULES.map(m=>{
+      const vs = VARIANTS[m.n], all = moduleWords(m.n), k = all.filter(w=>S.known[w.en]).length;
+      return `<div class="module">
+        <div class="row" style="align-items:center;justify-content:flex-start;gap:12px">
+          <span class="mn">${m.n}</span>
+          <span style="min-width:0"><h3>${esc(m.en)}</h3><span class="ru">${esc(m.ru)} · ${wordsN(all.length)} · знаю ${k}</span></span>
+        </div>
+        <div class="vars">${vs.map((v,i)=>{ const b = S.best[bestKey(S.dir,m.n,i)];
+          return `<button class="var" data-m="${m.n}" data-v="${i}">
+            <span class="vbody"><b>${vs.length>1?`Вариант ${i+1}`:"Начать тест"}</b><span class="muted num">${v.length} ${plural(v.length,"вопрос","вопроса","вопросов")}</span></span>
+            ${b?`<span class="vbest" title="Лучшая оценка ${b.right}/${b.total}">${b.mark}</span>`:`<span class="vbest none">—</span>`}
+          </button>`}).join("")}</div></div>`}).join("")}
+    </section>
+    <div style="display:flex;flex-direction:column;gap:8px"><button class="linkbtn" id="reset">Сбросить результаты</button><div id="rbox" hidden></div></div>`;
+  $("#name").oninput = e=>{ NAME = e.target.value.slice(0,60); e.target.classList.remove("wrong") };
+  $$(".dir").forEach(b=>b.onclick=()=>{ S.dir=b.dataset.dir; save(); renderHome() });
+  $$(".var").forEach(b=>b.onclick=()=>startTest(+b.dataset.m, +b.dataset.v));
+  $("#reset").onclick = ()=>{
+    const box=$("#rbox"); box.hidden=false;
+    box.innerHTML=`<div class="confirm"><b>Сбросить результаты?</b><span>Удалятся лучшие оценки по вариантам и счётчик «Знаю с первой попытки».</span>
+      <div class="actions"><button class="btn danger" id="yes">Сбросить</button><button class="btn ghost" id="no">Отмена</button></div></div>`;
+    $("#no").onclick=()=>box.hidden=true;
+    $("#yes").onclick=()=>{ S.best={}; S.known={}; save(); toast("Результаты сброшены"); renderHome() };
+  };
+}
+
+function startTest(m, v){
+  if(!NAME.trim()){ const n=$("#name"); n.classList.add("wrong"); n.scrollIntoView({block:"center"}); n.focus(); toast("Впиши имя — оно будет в результате"); return }
+  R = {m, v, nv:VARIANTS[m].length, dir:S.dir, qs:shuffle(VARIANTS[m][v]).map(w=>makeQuestion(w,S.dir)), i:0, answers:[], start:Date.now()};
+  renderQ();
+}
+// Работа над ошибками: только слова с ошибкой, без оценки
+function startPractice(words, dir, m){
+  R = {practice:true, m, dir, qs:shuffle(words).map(w=>makeQuestion(w,dir)), i:0, answers:[], start:Date.now()};
+  renderQ();
+}
+
+// ---------- Вопрос ----------
+function renderQ(){
+  const q = R.qs[R.i];
+  window.scrollTo(0,0);
+  R.tries = 0; R.locked = false;
+  $("#app").innerHTML = `
+    <div class="qhead"><button class="back" id="back">Выйти из теста полностью</button>
+      <span class="muted num">${R.practice?"Работа над ошибками":runLabel(R)} · ${R.i+1} / ${R.qs.length}</span></div>
+    <div class="pbar"><i style="width:${R.i/R.qs.length*100}%"></i></div>
+    <div class="card">
+      <span class="ask">${DIRS[R.dir].ask}</span>
+      <span class="prompt ${q.promptEn?"en":""}">${esc(q.prompt)}</span>
+      <div class="opts">${q.options.map(o=>`<button class="opt" data-o="${esc(o)}">${esc(o)}</button>`).join("")}</div>
+      <div class="hint" id="hint" aria-live="polite"></div>
+    </div>
+    <div id="exit" hidden></div>`;
+  $("#back").onclick = confirmExit;
+  $$(".opt").forEach(b=>b.onclick=()=>pick(b));
+}
+
+// Ошибка — красным, можно выбрать ещё; в результат идёт только первая попытка
+function pick(b){
+  if(R.locked || b.disabled) return;
+  const q = R.qs[R.i], ok = b.dataset.o===q.answer;
+  if(R.tries===0){
+    R.answers.push({q, given:b.dataset.o, ok});
+    if(ok){ S.known[q.w.en] = true; save() }
+  }
+  R.tries++;
+  if(!ok){
+    b.classList.add("wrong"); b.disabled = true;
+    $("#hint").textContent = "Неверно. Подумай и выбери другой ответ.";
+    return;
+  }
+  R.locked = true;
+  b.classList.add("right");
+  $$(".opt").forEach(x=>x.disabled=true);
+  speak(q.w.en);  // слово звучит после верного ответа
+  $("#hint").innerHTML = `<span class="oktxt">${R.tries===1?"Верно!":"Теперь верно. В результат пойдёт ошибка."}</span>
+    <span class="muted"> <b style="color:var(--ink)">${esc(q.w.en)}</b> — ${esc(q.w.ru)}</span>`;
+  setTimeout(()=>{ R.i++; R.i<R.qs.length ? renderQ() : (R.practice?finishPractice():finish()) }, R.tries===1?800:1600);
+}
+function confirmExit(){
+  const box=$("#exit"); box.hidden=false;
+  box.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="exit-t"><div class="box">
+    <h3 id="exit-t">Вы точно хотите выйти из теста?</h3>
+    <span class="muted">Тест закончится, ответы этого прохода не сохранятся и оценки не будет.</span>
+    <div class="actions"><button class="btn ghost" id="no">Нет, остаться</button><button class="btn danger" id="yes">Да, выйти</button></div>
+  </div></div>`;
+  $("#no").focus();
+  $("#yes").onclick=renderHome; $("#no").onclick=()=>{ box.hidden=true; box.innerHTML="" };
+}
+
+// ---------- Итог (экран для преподавателя) ----------
+function finish(){
+  const right = R.answers.filter(a=>a.ok).length, total = R.answers.length;
+  const r = {date:Date.now(), name:NAME.trim(), m:R.m, v:R.v, nv:R.nv, dir:R.dir, right, total, mark:markOf(right/total),
+    secs:Math.round((Date.now()-R.start)/1000),
+    mistakes:R.answers.filter(a=>!a.ok).map(a=>({w:a.q.w, right:a.q.answer, given:a.given}))};
+  const k = bestKey(r.dir,r.m,r.v), prev = S.best[k];
+  if(!prev || r.right>prev.right) S.best[k] = {mark:r.mark, right:r.right, total:r.total, date:r.date};
+  save();
+  sendToTeacher(r);
+  renderReport(r);
+}
+// Заготовка: отправка результата преподавателю на сервер. Сейчас ничего не делает
+function sendToTeacher(r){ /* TODO: fetch("https://…/results",{method:"POST",body:JSON.stringify(r)}) */ }
+
+function renderReport(r){
+  window.scrollTo(0,0);
+  const nextV = (r.v+1)%r.nv, nextM = r.m%MODULES.length+1;
+  const goNext = r.nv>1 && nextV!==0 ? {label:`Вариант ${nextV+1}`, run:()=>startTest(r.m,nextV)} : {label:`Модуль ${nextM}`, run:()=>startTest(nextM,0)};
+  $("#app").innerHTML = `${brand}
+    <div class="card">
+      <div class="report-head">
+        <div class="meta"><span class="label">${esc(runLabel(r))} · ${DIRS[r.dir].name}</span>
+          <h2>${esc(r.name)}</h2><span class="muted num">${fmtDate(r.date)}</span>
+          <b style="margin-top:6px">${MARK_WORD[r.mark]}</b></div>
+        <div class="mark" aria-label="Оценка ${r.mark}">${r.mark}</div>
+      </div>
+      <div class="facts num">
+        <div class="fact"><b>${r.right} из ${r.total}</b><span>верно с первой попытки</span></div>
+        <div class="fact"><b>${Math.round(r.right/r.total*100)}%</b><span>результат</span></div>
+        <div class="fact"><b>${fmtTime(r.secs)}</b><span>время</span></div>
+      </div>
+      ${r.mistakes.length?`<span class="label">Ошибки · ${r.mistakes.length}</span>
+        <div class="tbl-wrap"><table class="mist"><thead><tr><th>Слово</th><th>Правильно</th><th>Первый ответ</th></tr></thead><tbody>
+        ${r.mistakes.map(m=>`<tr><td><b>${esc(r.dir==="e2r"?m.w.en:m.w.ru)}</b></td><td class="oktxt" data-l="Правильно">${esc(m.right)}</td><td data-l="Первый ответ"><span class="wrongtxt">${esc(m.given)}</span></td></tr>`).join("")}
+        </tbody></table></div>`:`<p class="oktxt" style="margin:0">Без ошибок</p>`}
+      <div class="actions">
+        ${r.mistakes.length?`<button class="btn" id="fix">Работа над ошибками · ${r.mistakes.length}</button>`:""}
+        <button class="btn ${r.mistakes.length?"ghost":""}" id="next">${goNext.label}</button>
+        <button class="btn ghost" id="copy">Скопировать для преподавателя</button>
+        <button class="btn ghost" id="home">К модулям</button></div>
+    </div>`;
+  if(r.mistakes.length) $("#fix").onclick = ()=>startPractice(r.mistakes.map(m=>m.w), r.dir, r.m);
+  $("#next").onclick = goNext.run;
+  $("#copy").onclick = ()=>copyResult(r);
+  $("#home").onclick = renderHome;
+}
+
+function finishPractice(){
+  const still = R.answers.filter(a=>!a.ok).map(a=>a.q.w);
+  const {dir, m} = R;
+  window.scrollTo(0,0);
+  $("#app").innerHTML = `${brand}
+    <div class="card">
+      <span class="label">Работа над ошибками · Модуль ${m}</span>
+      <h2>${still.length?`Осталось ${wordsN(still.length)}`:"Все ошибки исправлены"}</h2>
+      <p class="muted" style="margin:0">${still.length?"Повтори их ещё раз, пока не ответишь верно с первой попытки.":"Можно возвращаться к модулям и улучшать оценку."}</p>
+      <div class="actions">
+        ${still.length?`<button class="btn" id="again">Повторить ${still.length}</button>`:""}
+        <button class="btn ${still.length?"ghost":""}" id="home">К модулям</button></div>
+    </div>`;
+  if(still.length) $("#again").onclick = ()=>startPractice(still, dir, m);
+  $("#home").onclick = renderHome;
+}
+
+// Текст результата для мессенджера
+function copyResult(r){
+  const txt = [`Spotlight 6 · слова · ${runLabel(r)} (${DIRS[r.dir].name})`,`Ученик: ${r.name}`,`Дата: ${fmtDate(r.date)}`,
+    `Результат: ${r.right} из ${r.total} (${Math.round(r.right/r.total*100)}%), оценка ${r.mark}`,`Время: ${fmtTime(r.secs)}`,
+    ...(r.mistakes.length?["Ошибки:",...r.mistakes.map(m=>`• ${m.w.en} — ${m.w.ru} (ответ: ${m.given})`)]:["Без ошибок"])].join("\n");
+  const fallback = ()=>{
+    if($("#manual")) return;
+    const ta=document.createElement("textarea"); ta.id="manual"; ta.value=txt; ta.rows=8;
+    ta.style.cssText="width:100%;font:inherit;font-size:14px;padding:10px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--fg)";
+    $("#copy").closest(".card").appendChild(ta); ta.select(); toast("Выдели и скопируй текст вручную");
+  };
+  try{ navigator.clipboard.writeText(txt).then(()=>toast("Скопировано — отправь преподавателю"), fallback) }catch(e){ fallback() }
+}
+
+renderHome();
+</script>
+</html>

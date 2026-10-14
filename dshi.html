@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Колтушская ДШИ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Концепция: нотный лист. Термины набраны курсивом с засечками, как ремарки в нотах; акцент — бордовый */
+:root{
+  --bg:#F5F6F8; --surface:#FFFFFF; --fg:#16171B; --muted:#5D616E; --line:#E0E2E8;
+  --accent:#8E1B3A; --accent-soft:#F6E3E8; --ok:#1E7A4C; --ok-soft:#E0F2E8; --bad:#C94A12; --bad-soft:#FBE9DF;
+  --f-term:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --f-ui:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121317; --surface:#1B1D23; --fg:#ECEDF0; --muted:#9BA0AD; --line:#2C2F38;
+  --accent:#E3678A; --accent-soft:#3A1B26; --ok:#4CC38A; --ok-soft:#15301F; --bad:#FF8A55; --bad-soft:#3A2116; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121317; --surface:#1B1D23; --fg:#ECEDF0; --muted:#9BA0AD; --line:#2C2F38;
+  --accent:#E3678A; --accent-soft:#3A1B26; --ok:#4CC38A; --ok-soft:#15301F; --bad:#FF8A55; --bad-soft:#3A2116; color-scheme:dark}
+
+body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);font-size:16px;line-height:1.5}
+/* Сброс для открытия файла напрямую в браузере телефона */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0}
+[hidden]{display:none!important}
+/* Телефон: крупнее текст и кнопки, кнопки во всю ширину */
+@media (max-width:560px){
+  body{font-size:17px}
+  .wrap{padding-block:10px 32px;gap:14px}
+  .card{padding:18px 16px;border-radius:16px}
+  .opt{font-size:17px;padding:16px;min-height:60px}
+  .opt.term{font-size:26px}
+  .prompt{font-size:26px}
+  .actions .btn{flex:1 1 100%;padding:16px;font-size:17px}
+  .dirs,.vars{grid-template-columns:1fr}
+  .var{padding:14px 16px}
+  .qhead{flex-wrap:wrap}
+  .back{font-size:15px;padding:8px 14px}
+  .facts{grid-template-columns:1fr 1fr}
+}
+.wrap{max-width:720px;margin:0 auto;padding-block:16px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:800;letter-spacing:-.01em}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.term{font-family:var(--f-term);font-style:italic;font-weight:700}
+.num{font-variant-numeric:tabular-nums}
+
+/* Шапка с нотным станом */
+.staff{padding-block:12px;background:repeating-linear-gradient(to bottom,transparent 0 9px,var(--line) 9px 10px) center/100% 50px no-repeat}
+.brand{font-family:var(--f-term);font-style:italic;font-weight:700;font-size:clamp(30px,8vw,44px);line-height:1;color:var(--accent);background:var(--bg);padding-right:10px}
+
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px}
+label.field{display:flex;flex-direction:column;gap:6px;font-weight:700}
+input[type=text]{font:inherit;font-size:18px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);width:100%;box-sizing:border-box}
+input.wrong{border-color:var(--bad);background:var(--bad-soft)}
+
+/* Выбор направления теста */
+.dirs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.dir{display:flex;flex-direction:column;gap:4px;text-align:left;padding:16px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg)}
+.dir[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.dir b{font-size:16px}
+.dir .ex{font-size:14px;color:var(--muted)}
+.dir .ex .term{font-size:20px;color:var(--accent)}
+
+/* Вопрос */
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.back{background:none;border:1.5px solid var(--line);border-radius:99px;color:var(--muted);padding:6px 14px;font-weight:600;font-size:14px}
+.back:hover{border-color:var(--bad);color:var(--bad)}
+/* Окно подтверждения выхода поверх вопроса — видно на любом экране */
+.modal{position:fixed;inset:0;z-index:10;background:rgba(10,11,14,.55);display:grid;place-items:center;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal .box{background:var(--surface);border-radius:18px;padding:22px;max-width:380px;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:12px}
+.modal h3{font-size:20px}
+.pbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.ask{font-size:14px;color:var(--muted);font-weight:600}
+.prompt{font-size:clamp(22px,5.5vw,30px);font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.prompt.term{font-size:clamp(38px,9vw,56px);color:var(--accent)}
+/* Произношение русскими буквами рядом с термином */
+.pron{font-family:var(--f-ui);font-style:normal;font-weight:600;font-size:.5em;color:var(--muted);white-space:nowrap}
+.prompt.term .pron{font-size:20px;display:block;margin-top:4px}
+.opt.term .pron{font-size:15px;margin-left:6px}
+td .pron{font-size:13px;margin-left:4px}
+.opts{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:560px){.opts{grid-template-columns:1fr 1fr}}
+.opt{padding:14px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);text-align:left;font-weight:600;min-height:56px}
+.opt.term{font-size:24px;font-weight:700;padding:8px 16px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.picked{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad);text-decoration:line-through;cursor:default}
+.hint{min-height:24px;font-weight:700;color:var(--bad)}
+/* Карточки вариантов */
+.vars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.var{display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg)}
+.var:hover{border-color:var(--accent)}
+.vnum{font-family:var(--f-term);font-style:italic;font-weight:700;font-size:40px;line-height:1;color:var(--accent);width:28px;text-align:center}
+.vbody{display:flex;flex-direction:column;flex:1;min-width:0;font-size:14px}
+.vbest{display:flex;flex-direction:column;align-items:center;font-size:12px;line-height:1.1}
+.vbest b{font-family:var(--f-term);font-style:italic;font-size:28px;color:var(--accent)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+@media (max-width:560px){.vars{grid-template-columns:1fr 1fr}.var{padding:12px}.vnum{font-size:34px;width:24px}}
+@media (max-width:380px){.vars{grid-template-columns:1fr}}
+/* Таблица ошибок на телефоне — карточками, без обрезки длинных значений */
+@media (max-width:560px){
+  table.mist thead{display:none}
+  table.mist tr{display:flex;flex-direction:column;gap:2px;padding:10px 0;border-bottom:1px solid var(--line)}
+  table.mist td{border:none;padding:0}
+  table.mist td[data-l]::before{content:attr(data-l);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-top:6px}
+}
+.block{border-top:1.5px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:8px}
+.linkbtn{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;font-size:14px}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:14px 22px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:16px}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--fg)}
+.btn.danger{background:var(--bad)}
+.confirm{border:1.5px solid var(--bad);background:var(--bad-soft);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+
+/* Итог — экран для преподавателя */
+.report-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.report-head .meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.report-head h2{font-size:22px}
+.grade{font-family:var(--f-term);font-style:italic;font-weight:700;font-size:110px;line-height:.8;color:var(--accent);
+  border:3px solid var(--accent);border-radius:50%;width:130px;height:130px;display:grid;place-items:center;transform:rotate(-6deg);flex:none}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.fact{background:var(--bg);border-radius:12px;padding:10px 12px}
+.fact b{display:block;font-size:20px;font-weight:800}
+.fact span{font-size:12px;color:var(--muted)}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td .term{font-size:19px;color:var(--accent)}
+.wrongtxt{color:var(--bad);text-decoration:line-through}
+.oktxt{color:var(--ok);font-weight:700}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:99px;font-weight:600;font-size:14px}
+@media (max-width:480px){.grade{width:96px;height:96px;font-size:80px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ============================================================
+   1. СЛОВАРЬ ТЕРМИНОВ (уникальные, собраны из 6 листов)
+   Формат: [термин, произношение, значение, доп. поля]
+   abbr — обозначение в нотах, rank — скорость темпа (для «что быстрее»),
+   alt — допустимые варианты написания, noSec — не спрашивать раздел
+   ============================================================ */
+const RAW = {
+  dyn:[
+    ["piano","пиа́но","тихо",{abbr:"p"}],
+    ["forte","фо́рте","громко, сильно",{abbr:"f"}],
+    ["mezzo piano","ме́ццо пиа́но","не очень тихо",{abbr:"mp"}],
+    ["mezzo forte","ме́ццо фо́рте","не очень громко",{abbr:"mf"}],
+    ["pianissimo","пиани́ссимо","очень тихо",{abbr:"pp"}],
+    ["fortissimo","форти́ссимо","очень громко",{abbr:"ff"}],
+    ["crescendo","креще́ндо","постепенно увеличивая силу звучания",{abbr:"cresc."}],
+    ["diminuendo","диминуэ́ндо","постепенно уменьшая силу звучания",{abbr:"dim."}],
+    ["sforzando","сфорца́ндо","внезапный акцент",{abbr:"sf"}]],
+  art:[
+    ["legato","лега́то","связно, плавно"],
+    ["staccato","стакка́то","коротко, отрывисто"],
+    ["non legato","нон лега́то","не связно"],
+    ["tenuto","тену́то","выдержанно, точно по длительности и силе"]],
+  tslow:[
+    ["grave","гра́ве","тяжело, тяжеловесно",{rank:1}],
+    ["largo","ла́рго","широко, протяжно",{rank:1}],
+    ["lento","ле́нто","медленно, протяжно",{rank:2}],
+    ["adagio","ада́жио","медленно, спокойно",{rank:2}],
+    ["larghetto","ларге́тто","немного скорее, чем Largo",{rank:3}]],
+  tmod:[
+    ["andante","анда́нте","не спеша, спокойно, в характере шага",{rank:4}],
+    ["andantino","анданти́но","несколько скорее, чем Andante",{rank:5}],
+    ["sostenuto","состену́то","сдержанно"],
+    ["comodo","ко́модо","удобно, непринуждённо",{noSec:true}],
+    ["moderato","моде́рато","умеренно",{rank:6}],
+    ["allegretto","аллегре́тто","довольно оживлённо, чуть медленнее, чем Allegro",{rank:7}],
+    ["allegro moderato","алле́гро моде́рато","умеренно скоро",{rank:7}]],
+  tfast:[
+    ["allegro","алле́гро","скоро",{rank:8}],
+    ["veloce","вело́че","скорее",{rank:8}],
+    ["vivo","ви́во","живо",{rank:9}],
+    ["vivace","вива́че","живо",{rank:9}],
+    ["vivacissimo","вивачи́ссимо","очень живо",{rank:10}],
+    ["presto","пре́сто","очень скоро, быстро",{rank:10}],
+    ["prestissimo","прести́ссимо","предельно быстро",{rank:11}]],
+  tacc:[
+    ["accelerando","аччелера́ндо","ускоряя"],
+    ["animando","анима́ндо","одушевляя, воодушевляя"],
+    ["stretto","стре́тто","сжато, сжимая"],
+    ["stringendo","стринджэ́ндо","сжимая, ускоряя"],
+    ["incalzando","инкальца́ндо","напирая"],
+    ["precipitando","пречипита́ндо","стремительно"]],
+  trit:[
+    ["ritenuto","ритену́то","сдерживая, замедляя"],
+    ["ritardando","ритарда́ндо","запаздывая"],
+    ["rallentando","раллента́ндо","замедляя",{abbr:"rall."}],
+    ["allargando","алларга́ндо","расширяя"],
+    ["slentando","слента́ндо","замедляя"]],
+  add:[
+    ["Tempo I","те́мпо при́мо","в первоначальном темпе",{alt:["tempo primo","tempo 1"]}],
+    ["ad libitum","ад ли́битум","по желанию, свободно",{alt:["ad lib"]}],
+    ["sempre","се́мпре","всё время"],
+    ["molto","мо́льто","очень"],
+    ["assai","асса́и","весьма, очень"],
+    ["con moto","кон мо́то","с движением"],
+    ["più mosso","пи́у мо́ссо","более подвижно",{alt:["piu mosso"]}],
+    ["meno mosso","мэ́но мо́ссо","менее подвижно"],
+    ["non troppo","нон тро́ппо","не слишком"],
+    ["alla","а́лла","в роде, в духе"],
+    ["tutti","ту́тти","все вместе"],
+    ["fermata","ферма́та","произвольное увеличение длительности"]],
+  char:[
+    ["agitato","аджита́то","взволнованно, возбуждённо"],
+    ["amoroso","аморо́зо","любовно"],
+    ["animato","анима́то","воодушевлённо, оживлённо"],
+    ["appassionato","аппассиона́то","страстно, пылко"],
+    ["brillante","брилля́нте","блестяще"],
+    ["cantabile","канта́биле","певуче, напевно"],
+    ["capriccioso","каприччо́зо","капризно, причудливо"],
+    ["con brio","кон бри́о","живо, весело"],
+    ["con dolore","кон доло́ре","с болью, горестно, скорбно"],
+    ["con fuoco","кон фуо́ко","с огнём, пылко"],
+    ["deciso","дечи́зо","решительно"],
+    ["dolce","до́льче","нежно, мягко"],
+    ["dolente","доле́нте","скорбно, горестно, печально"],
+    ["energico","эне́рджико","энергично"],
+    ["espressivo","эспресси́во","экспрессивно, выразительно"],
+    ["giocoso","джоко́зо","игриво"],
+    ["grazioso","грацио́зо","грациозно, изящно"],
+    ["leggero","леджэ́ро","легко"],
+    ["maestoso","маэсто́зо","величественно, торжественно"],
+    ["misterioso","мистерио́зо","таинственно, загадочно"],
+    ["pesante","пеза́нте","тяжеловесно"],
+    ["quasi eco","куа́зи э́ко","как будто эхо"],
+    ["risoluto","ризолю́то","решительно"],
+    ["scherzando","скерца́ндо","шутливо",{alt:["scherzoso"]}],
+    ["sonoro","соно́ро","звонко, звучно"],
+    ["tranquillo","транкуи́лло","спокойно, безмятежно"]]
+};
+
+// Разделы и укрупнённые группы (группы — для фильтра на главной)
+const SECTIONS = {
+  dyn:{name:"Динамика",g:"dyn"}, art:{name:"Штрихи",g:"art"},
+  tslow:{name:"Медленные темпы",g:"tempo"}, tmod:{name:"Умеренные темпы",g:"tempo"}, tfast:{name:"Быстрые темпы",g:"tempo"},
+  tacc:{name:"Ускорение темпа",g:"chg"}, trit:{name:"Замедление темпа",g:"chg"},
+  char:{name:"Характер",g:"char"}, add:{name:"Дополнительные",g:"add"}
+};
+const GROUPS = {dyn:"Динамика",art:"Штрихи",tempo:"Темпы",chg:"Изменение темпа",char:"Характер",add:"Дополнительные"};
+
+// Плоский список терминов
+const TERMS = [];
+for(const sec in RAW) RAW[sec].forEach(([term,pron,mean,x={}])=>TERMS.push({term,pron,mean,sec,g:SECTIONS[sec].g,...x}));
+// Для темпов в ответах сначала пишем вид темпа, затем значение: «Медленный темп. Широко, протяжно»
+const TEMPO_KIND = {tslow:"Медленный темп", tmod:"Умеренный темп", tfast:"Быстрый темп"};
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+// Произношение по термину; termHtml — термин и рядом произношение русскими буквами
+// Термины для синтезатора — отдельный тест, свой пул неверных вариантов
+const SYNTH = [
+  ["Кнопки на панели",[
+    ["Split","сплит","разделение клавиатуры"],
+    ["ACMP","эй-си-эм-пи","с автоаккомпанементом"],
+    ["Intro","и́нтро","вступление"],
+    ["Harm/Arp","харм/арп","с применением арпеджиатора"]]],
+  ["Звук и аккомпанемент",[
+    ["Timbre / Voice","тэ́мбр / войс","Тембр — звуковая окраска, имитация конкретного музыкального инструмента или уникальный электронный звук"],
+    ["Автоаккомпанемент","автоаккомпане́мент","функция, которая генерирует фоновый ритм и музыкальное сопровождение (бас, гармонию) в выбранном стиле под левую руку"],
+    ["Arpeggiator","арпеджиа́тор","Арпеджиатор — инструмент, который автоматически преобразует зажатый аккорд в последовательность отдельных нот (арпеджио)"]]],
+  ["Эффекты и обработка",[
+    ["Reverb","риве́рб","Реверберация — имитация отражения звука в помещении (эффект присутствия в зале или комнате)"],
+    ["Chorus","ко́рус","Хорус — уплотняет и «расширяет» звук, создавая ощущение звучания нескольких инструментов одновременно"],
+    ["Vocoder","во́укодер","Вокодер — устройство обработки, которое модулирует голос исполнителя через музыкальный сигнал, превращая его в «голос робота»"],
+    ["EQ","и-кью (эквала́йзер)","Эквалайзер — инструмент настройки баланса частот (низких, средних и высоких)"]]],
+  ["Запись и игра",[
+    ["Sequencer","си́квенсер","Секвенсор — встроенное устройство или программа для записи, редактирования и воспроизведения музыкальных треков"],
+    ["Transpose","транспо́уз","Транспонирование — смещение общей тональности выше или ниже без изменения сыгранных клавиш"],
+    ["Метроном","метро́ном","встроенный звуковой или визуальный пульс для контроля темпа при игре"]]],
+  ["Контроллеры и колёса",[
+    ["Pitch Bend","пич бенд","Колесо высоты тона — плавно изменяет высоту звука вверх или вниз при прокрутке (удобно для имитации подтяжек, как на гитаре)"]]],
+  ["Интерфейсы и подключение",[
+    ["MIDI","ми́ди","стандарт обмена музыкальными данными между синтезатором, компьютером и другим оборудованием"],
+    ["USB-to-Host / USB-to-Device","ю-эс-би ту хо́уст / ю-эс-би ту дива́йс","разъёмы для подключения синтезатора к компьютеру или флеш-накопителям"],
+    ["AUX / Audio In/Out","аукс / о́дио ин/а́ут","линейные входы и выходы для подключения внешних источников звука, колонок или наушников"]]]
+];
+const SYNTH_TERMS = [];
+SYNTH.forEach(([g,list])=>list.forEach(([term,pron,mean])=>SYNTH_TERMS.push({term,pron,mean,g,sec:"synth"})));
+const PRON = Object.fromEntries([...TERMS,...SYNTH_TERMS].map(t=>[t.term,t.pron]));
+const termHtml = term => `${esc(term)}${PRON[term]?` <span class="pron">${esc(PRON[term])}</span>`:""}`;
+const termTxt = term => PRON[term]?`${term} [${PRON[term]}]`:term;
+TERMS.forEach(t=>{ t.show = TEMPO_KIND[t.sec] ? `${TEMPO_KIND[t.sec]}. ${cap(t.mean)}` : t.mean; t.ask = t.show; t.pool = TERMS });
+// Синтезатор: в варианте ответа — «Реверберация — имитация…»; в вопросе «перевод → термин»
+// русское название убираем, чтобы оно не подсказывало ответ
+SYNTH_TERMS.forEach(t=>{
+  t.show = t.mean; t.pool = SYNTH_TERMS;
+  const m = t.mean.match(/^[А-ЯЁ][^—]*? — (.+)$/);
+  t.ask = m ? m[1] : t.mean;   // без названия: «имитация отражения звука…»
+  t.opt = t.ask;               // так же показываем в вариантах ответа, чтобы название не подсказывало
+});
+TERMS.forEach(t=>{ t.opt = t.show });
+// Корень термина по произношению (без ударений): «арпеджиатор» → «арпедж».
+// Нужен, чтобы не ставить рядом термин и вариант, где этот же корень (Arpeggiator ↔ «с применением арпеджиатора»)
+const stem = t => { const w = t.pron.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().split(/[\s/(]+/)[0]; return w.length>=6 ? w.slice(0,6) : null };
+const clash = (a,b) => { const sa=stem(a), sb=stem(b); return (sa && b.opt.toLowerCase().includes(sa)) || (sb && a.opt.toLowerCase().includes(sb)) };
+// Если в тексте вопроса/варианта остался корень самого термина в скобках — «(арпеджио)» — убираем эти скобки
+SYNTH_TERMS.forEach(t=>{ const st=stem(t); if(!st) return;
+  t.ask = t.opt = t.ask.replace(/\s*\([^)]*\)/g, m => m.toLowerCase().includes(st) ? "" : m);
+});
+
+/* ============================================================
+   2. НАСТРОЙКИ ТЕСТА
+   ============================================================ */
+const OPTIONS = 4;          // вариантов ответа в каждом вопросе
+const VARIANTS = 4;         // вариантов теста; вместе покрывают все термины
+const DIRS = {
+  t2r:{name:"Термин → перевод", ask:"Как переводится термин?", ex:'<span class="term">dolce</span> → нежно, мягко'},
+  r2t:{name:"Перевод → термин", ask:"Какой термин так переводится?", ex:'нежно, мягко → <span class="term">dolce</span>'}
+};
+// Два теста: музыкальные термины (4 варианта) и синтезатор (один тест)
+const testLabel = r => r.set==="synth" ? "Синтезатор" : `Вариант ${r.variant+1}`;
+const bestKey = (set,dir,v) => set==="synth" ? `synth:${dir}` : `${dir}:${v}`;
+const markOf = p => p>=.9?5:p>=.75?4:p>=.55?3:2;
+const MARK_WORD = {5:"Отлично",4:"Хорошо",3:"Удовлетворительно",2:"Нужно повторить"};
+
+// Постоянный состав вариантов: термины раздаются по кругу (1,2,3,4,1,2…),
+// поэтому в каждом варианте есть все разделы, а размеры 20/20/20/19
+const VARIANT_TERMS = Array.from({length:VARIANTS},(_,v)=>TERMS.filter((_,i)=>i%VARIANTS===v));
+// Выравниваем все варианты до одинаковой длины (20): недостающий вопрос — повтор
+// термина из другого варианта (берём из середины словаря, чтобы не повторять самый первый раздел)
+const VARIANT_LEN = Math.max(...VARIANT_TERMS.map(v=>v.length));
+VARIANT_TERMS.forEach(list=>{
+  let k = Math.floor(TERMS.length/2);
+  while(list.length<VARIANT_LEN){ const t = TERMS[k++ % TERMS.length]; if(!list.includes(t)) list.push(t) }
+});
+
+/* ============================================================
+   3. СОСТОЯНИЕ (только в браузере ученика)
+   best — лучший результат по каждому варианту и направлению
+   known — термины, на которые ученик хоть раз ответил верно с первой попытки
+   ============================================================ */
+const KEY = "con-brio-test-v1";
+let S = {name:"", dir:"t2r", best:{}, known:{}};
+try{ Object.assign(S, JSON.parse(localStorage.getItem(KEY))||{}) }catch(e){}
+S.best = S.best||{}; S.known = S.known||{};
+// Имя не запоминаем: при каждом открытии поле пустое (на одном телефоне могут заниматься разные ученики)
+S.name = "";
+const save = () => { try{ const {name, ...keep} = S; localStorage.setItem(KEY, JSON.stringify(keep)) }catch(e){} };
+
+/* ============================================================
+   4. УТИЛИТЫ
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a };
+// Части значения через запятую — по ним отсекаем синонимы, чтобы верный вариант был один
+const chunks = s => s.toLowerCase().replace(/ё/g,"е").split(/[,;]/).map(x=>x.trim()).filter(Boolean);
+const overlap = (a,b) => chunks(a).some(c=>chunks(b).includes(c));
+const fmtDate = d => new Date(d).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+const fmtTime = s => `${Math.floor(s/60)} мин ${s%60} с`;
+const plural = (n,a,b,c) => { const m=n%10, h=n%100; return m===1&&h!==11?a: m>=2&&m<=4&&(h<12||h>14)?b:c };
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>t.hidden=true,2600) }
+
+// 3 неверных варианта: сначала из того же раздела, без синонимов верного ответа и друг друга
+function distract(t){
+  const need = OPTIONS-1, res = [];
+  const pool = t.pool || TERMS;
+  const same = shuffle(pool.filter(x=>x!==t && x.g===t.g));
+  const other = shuffle(pool.filter(x=>x.g!==t.g));
+  for(const x of [...same,...other]){
+    if(res.length>=need) break;
+    if(!overlap(x.mean,t.mean) && !clash(x,t) && !res.some(r=>overlap(r.mean,x.mean) || clash(r,x))) res.push(x);
+  }
+  for(const x of shuffle(pool)){ // страховка, если вдруг не хватило
+    if(res.length>=need) break;
+    if(x!==t && !res.includes(x) && x.mean!==t.mean) res.push(x);
+  }
+  return res;
+}
+function makeQuestion(t, dir){
+  const opts = shuffle([t, ...distract(t)]);
+  return dir==="t2r"
+    ? {t, prompt:t.term, promptTerm:true, options:opts.map(x=>x.opt), answer:t.opt, optTerm:false}
+    : {t, prompt:t.ask, promptTerm:false, options:opts.map(x=>x.term), answer:t.term, optTerm:true};
+}
+
+/* ============================================================
+   5. ЭКРАНЫ
+   ============================================================ */
+let R = null; // текущий прогон: тест (variant 1–4) или работа над ошибками (practice)
+
+// ---------- Старт: имя, направление, выбор варианта ----------
+function renderHome(){
+  R = null;
+  const known = TERMS.filter(t=>S.known[t.term]).length;
+  const sknown = SYNTH_TERMS.filter(t=>S.known[t.term]).length, sb = S.best[bestKey("synth",S.dir)];
+  $("#app").innerHTML = `
+    <div class="staff"><span class="brand">Колтушская ДШИ</span></div>
+    <div class="card">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <h1 style="font-size:24px">Тест по музыкальным терминам</h1>
+        <span class="muted">${VARIANTS} варианта охватывают все ${TERMS.length} терминов. Ошибся — выбери ещё раз, но в оценку идёт первый ответ.</span>
+      </div>
+      <label class="field">Имя и фамилия
+        <input type="text" id="name" value="${esc(S.name)}" placeholder="Например, Анна Иванова" autocomplete="name"></label>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="label">Направление</span>
+        <div class="dirs">${Object.entries(DIRS).map(([k,d])=>
+          `<button class="dir" data-dir="${k}" aria-pressed="${S.dir===k}"><b>${d.name}</b><span class="ex">${d.ex}</span></button>`).join("")}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="label">Выбери вариант, чтобы начать</span>
+        <div class="vars">${VARIANT_TERMS.map((list,v)=>{
+          const b = S.best[S.dir+":"+v];
+          return `<button class="var" data-v="${v}">
+            <span class="vnum">${v+1}</span>
+            <span class="vbody"><b style="white-space:nowrap">Вариант ${v+1}</b><span class="muted num">${list.length} ${plural(list.length,"вопрос","вопроса","вопросов")}</span></span>
+            ${b?`<span class="vbest num" title="Лучший результат"><b>${b.mark}</b><span>${b.right}/${b.total}</span></span>`:`<span class="vbest muted">—</span>`}
+          </button>`}).join("")}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div class="row"><span class="label">Знаю с первой попытки</span><span class="num"><b>${known}</b> из ${TERMS.length}</span></div>
+        <div class="pbar"><i style="width:${known/TERMS.length*100}%;background:var(--ok)"></i></div>
+      </div>
+      <div class="block">
+        <span class="label">Отдельный тест</span>
+        <button class="var" id="synth">
+          <span class="vbody"><b>Термины для синтезатора</b><span class="muted num">${SYNTH_TERMS.length} ${plural(SYNTH_TERMS.length,"вопрос","вопроса","вопросов")} · Split, ACMP, Reverb, MIDI…</span></span>
+          ${sb?`<span class="vbest num" title="Лучший результат"><b>${sb.mark}</b><span>${sb.right}/${sb.total}</span></span>`:`<span class="vbest muted">—</span>`}
+        </button>
+        <div class="row"><span class="label">Знаю с первой попытки</span><span class="num"><b>${sknown}</b> из ${SYNTH_TERMS.length}</span></div>
+        <div class="pbar"><i style="width:${sknown/SYNTH_TERMS.length*100}%;background:var(--ok)"></i></div>
+      </div>
+      <div><button class="linkbtn" id="reset">Сбросить результаты</button></div>
+      <div id="rbox" hidden></div>
+    </div>`;
+  $("#name").oninput = e=>{ S.name=e.target.value.slice(0,60); save(); e.target.classList.remove("wrong") };
+  $$(".dir").forEach(b=>b.onclick=()=>{ S.dir=b.dataset.dir; save(); renderHome() });
+  $$(".var[data-v]").forEach(b=>b.onclick=()=>startVariant(+b.dataset.v));
+  $("#synth").onclick = startSynth;
+  $("#reset").onclick = ()=>{
+    const box=$("#rbox"); box.hidden=false;
+    box.innerHTML=`<div class="confirm"><b>Сбросить результаты?</b><span>Удалятся лучшие оценки по вариантам и счётчик выученных терминов.</span>
+      <div class="actions"><button class="btn danger" id="yes">Сбросить</button><button class="btn ghost" id="no">Отмена</button></div></div>`;
+    $("#no").onclick=()=>box.hidden=true;
+    $("#yes").onclick=()=>{ S.best={}; S.known={}; save(); toast("Результаты сброшены"); renderHome() };
+  };
+}
+
+function startVariant(v){
+  if(!S.name.trim()){ $("#name").classList.add("wrong"); $("#name").focus(); toast("Впиши имя — оно будет в результате"); return }
+  // Состав варианта постоянный, порядок вопросов каждый раз новый
+  R = {set:"music", variant:v, dir:S.dir, qs:shuffle(VARIANT_TERMS[v]).map(t=>makeQuestion(t,S.dir)), i:0, answers:[], start:Date.now()};
+  renderQ();
+}
+// Отдельный тест по синтезатору: все термины, порядок каждый раз новый
+function startSynth(){
+  if(!S.name.trim()){ $("#name").classList.add("wrong"); $("#name").focus(); toast("Впиши имя — оно будет в результате"); return }
+  R = {set:"synth", dir:S.dir, qs:shuffle(SYNTH_TERMS).map(t=>makeQuestion(t,S.dir)), i:0, answers:[], start:Date.now()};
+  renderQ();
+}
+// Работа над ошибками: только термины с ошибкой, без оценки
+function startPractice(terms, dir){
+  R = {practice:true, dir, qs:shuffle(terms).map(t=>makeQuestion(t,dir)), i:0, answers:[], start:Date.now()};
+  renderQ();
+}
+
+// ---------- Вопрос ----------
+function renderQ(){
+  const q = R.qs[R.i];
+  window.scrollTo(0,0); // каждый вопрос — с верха экрана
+  R.tries = 0; R.locked = false;
+  $("#app").innerHTML = `
+    <div class="qhead"><button class="back" id="back">Выйти из теста полностью</button>
+      <span class="muted num">${R.practice?"Работа над ошибками":testLabel(R)} · ${R.i+1} / ${R.qs.length}</span></div>
+    <div class="pbar"><i style="width:${R.i/R.qs.length*100}%"></i></div>
+    <div class="card">
+      <span class="ask">${DIRS[R.dir].ask}</span>
+      <div class="prompt ${q.promptTerm?"term":""}">${q.promptTerm?termHtml(q.prompt):esc(q.prompt)}</div>
+      <div class="opts">${q.options.map(o=>`<button class="opt ${q.optTerm?"term":""}" data-o="${esc(o)}">${q.optTerm?termHtml(o):esc(o)}</button>`).join("")}</div>
+      <div class="hint" id="hint" aria-live="polite"></div>
+    </div>
+    <div id="exit" hidden></div>`;
+  $("#back").onclick = confirmExit;
+  $$(".opt").forEach(b=>b.onclick=()=>pick(b));
+}
+
+// Выбор ответа: ошибка — красным, можно выбрать ещё; в результат идёт только первая попытка
+function pick(b){
+  if(R.locked || b.disabled) return;
+  const q = R.qs[R.i], ok = b.dataset.o===q.answer;
+  if(R.tries===0){
+    R.answers.push({q, given:b.dataset.o, ok});
+    if(ok) S.known[q.t.term] = true;
+    save();
+  }
+  R.tries++;
+  if(!ok){
+    b.classList.add("wrong"); b.disabled = true;
+    $("#hint").textContent = "Неверно. Подумай и выбери другой ответ.";
+    return;
+  }
+  R.locked = true;
+  b.classList.add("right");
+  $$(".opt").forEach(x=>x.disabled=true);
+  $("#hint").innerHTML = `<span class="oktxt">${R.tries===1?"Верно!":"Теперь верно. В результат пойдёт ошибка."}</span>
+    <span class="muted"> <span class="term" style="font-size:20px;color:var(--accent)">${termHtml(q.t.term)}</span> — ${esc(q.t.show)}</span>`;
+  setTimeout(()=>{ R.i++; R.i<R.qs.length ? renderQ() : (R.practice?finishPractice():finish()) }, R.tries===1?650:1500);
+}
+// Выход из теста: только после подтверждения в окне поверх вопроса.
+// «Остаться» возвращает к тому же вопросу, ничего не теряется.
+function confirmExit(){
+  const box=$("#exit"); box.hidden=false;
+  box.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="exit-t"><div class="box">
+    <h3 id="exit-t">Вы точно хотите выйти из теста?</h3>
+    <span class="muted">Тест закончится, ответы этого прохода не сохранятся и оценки не будет.</span>
+    <div class="actions"><button class="btn ghost" id="no">Нет, остаться</button><button class="btn danger" id="yes">Да, выйти</button></div>
+  </div></div>`;
+  $("#no").focus();
+  $("#yes").onclick=renderHome; $("#no").onclick=()=>{ box.hidden=true; box.innerHTML="" };
+}
+
+// ---------- Итог теста (экран для преподавателя) ----------
+function finish(){
+  const right = R.answers.filter(a=>a.ok).length, total = R.answers.length;
+  const r = {date:Date.now(), name:S.name.trim(), set:R.set, variant:R.variant, dir:R.dir, right, total, mark:markOf(right/total),
+    secs:Math.round((Date.now()-R.start)/1000),
+    mistakes:R.answers.filter(a=>!a.ok).map(a=>({term:a.q.t.term, mean:a.q.t.show, given:a.given}))};
+  // Лучший результат по варианту
+  const k = bestKey(r.set,r.dir,r.variant), prev = S.best[k];
+  if(!prev || r.right>prev.right) S.best[k] = {mark:r.mark, right:r.right, total:r.total, date:r.date};
+  save();
+  sendToTeacher(r);
+  renderReport(r);
+}
+// Заготовка на будущее: отправка результата на сервер / устройство преподавателя.
+// Сейчас ничего не делает. Позже: fetch("https://…/results",{method:"POST",body:JSON.stringify(r)})
+function sendToTeacher(r){ /* TODO */ }
+
+function renderReport(r){
+  window.scrollTo(0,0);
+  const pool = r.set==="synth" ? SYNTH_TERMS : TERMS;
+  const missed = r.mistakes.map(m=>pool.find(t=>t.term===m.term));
+  const nextV = (r.variant+1)%VARIANTS;
+  $("#app").innerHTML = `
+    <div class="staff"><span class="brand">Колтушская ДШИ</span></div>
+    <div class="card">
+      <div class="report-head">
+        <div class="meta"><span class="label">${testLabel(r)} · ${DIRS[r.dir].name}</span>
+          <h2>${esc(r.name)}</h2><span class="muted num">${fmtDate(r.date)}</span>
+          <b style="margin-top:6px">${MARK_WORD[r.mark]}</b></div>
+        <div class="grade" aria-label="Оценка ${r.mark}">${r.mark}</div>
+      </div>
+      <div class="facts num">
+        <div class="fact"><b>${r.right} из ${r.total}</b><span>верно с первой попытки</span></div>
+        <div class="fact"><b>${Math.round(r.right/r.total*100)}%</b><span>результат</span></div>
+        <div class="fact"><b>${fmtTime(r.secs)}</b><span>время</span></div>
+      </div>
+      ${r.mistakes.length?`<span class="label">Ошибки · ${r.mistakes.length}</span>
+        <div class="tbl-wrap"><table class="mist"><thead><tr><th>Термин</th><th>Правильно</th><th>Первый ответ</th></tr></thead><tbody>
+        ${r.mistakes.map(m=>`<tr><td><span class="term">${termHtml(m.term)}</span></td><td class="oktxt" data-l="Правильно">${r.dir==="t2r"?esc(m.mean):termHtml(m.term)}</td><td data-l="Первый ответ"><span class="wrongtxt">${r.dir==="t2r"?esc(m.given):termHtml(m.given)}</span></td></tr>`).join("")}
+        </tbody></table></div>`:`<p class="oktxt" style="margin:0">Без ошибок</p>`}
+      <div class="actions">
+        ${missed.length?`<button class="btn" id="fix">Работа над ошибками · ${missed.length}</button>`:""}
+        <button class="btn ${missed.length?"ghost":""}" id="next">${r.set==="synth"?"Пройти ещё раз":"Вариант "+(nextV+1)}</button>
+        <button class="btn ghost" id="copy">Скопировать для преподавателя</button>
+        <button class="btn ghost" id="home">К вариантам</button></div>
+    </div>`;
+  if(missed.length) $("#fix").onclick = ()=>startPractice(missed, r.dir);
+  $("#next").onclick = ()=> r.set==="synth" ? startSynth() : startVariant(nextV);
+  $("#copy").onclick = ()=>copyResult(r);
+  $("#home").onclick = renderHome;
+}
+
+// ---------- Итог работы над ошибками (без оценки) ----------
+function finishPractice(){
+  const still = R.answers.filter(a=>!a.ok).map(a=>a.q.t);
+  $("#app").innerHTML = `
+    <div class="staff"><span class="brand">Колтушская ДШИ</span></div>
+    <div class="card">
+      <span class="label">Работа над ошибками</span>
+      <h2>${still.length?`Осталось ${still.length} ${plural(still.length,"термин","термина","терминов")}`:"Все ошибки исправлены"}</h2>
+      <p class="muted" style="margin:0">${still.length?"Повтори их ещё раз, пока не ответишь верно с первой попытки.":"Можно возвращаться к вариантам и улучшать оценку."}</p>
+      <div class="actions">
+        ${still.length?`<button class="btn" id="again">Повторить ${still.length}</button>`:""}
+        <button class="btn ${still.length?"ghost":""}" id="home">К вариантам</button></div>
+    </div>`;
+  const dir = R.dir;
+  if(still.length) $("#again").onclick = ()=>startPractice(still, dir);
+  $("#home").onclick = renderHome;
+}
+
+// Текст результата для мессенджера
+function copyResult(r){
+  const txt = [`Колтушская ДШИ · ${r.set==="synth"?"тест по терминам для синтезатора":"тест по музыкальным терминам"}`,`${testLabel(r)} (${DIRS[r.dir].name})`,`Ученик: ${r.name}`,`Дата: ${fmtDate(r.date)}`,
+    `Результат: ${r.right} из ${r.total} (${Math.round(r.right/r.total*100)}%), оценка ${r.mark}`,`Время: ${fmtTime(r.secs)}`,
+    ...(r.mistakes.length?["Ошибки:",...r.mistakes.map(m=>`• ${termTxt(m.term)} — ${m.mean} (ответ: ${r.dir==="t2r"?m.given:termTxt(m.given)})`)]:["Без ошибок"])].join("\n");
+  const fallback = ()=>{ // если буфер обмена недоступен — показываем текст для ручного копирования
+    if($("#manual")) return;
+    const ta=document.createElement("textarea"); ta.id="manual"; ta.value=txt; ta.rows=8;
+    ta.style.cssText="width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:10px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg)";
+    $("#copy").closest(".card").appendChild(ta); ta.select(); toast("Выдели и скопируй текст вручную");
+  };
+  try{ navigator.clipboard.writeText(txt).then(()=>toast("Скопировано — отправь преподавателю"), fallback) }catch(e){ fallback() }
+}
+
+renderHome();
+</script>
+
+</html>
